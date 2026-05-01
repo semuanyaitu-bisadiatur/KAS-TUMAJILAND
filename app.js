@@ -13,21 +13,20 @@ const app = {
     nextId: parseInt(localStorage.getItem('kasNextId')) || 1,
 
     // Constants
-    namaBulan: ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+    namaBulan: ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
+    namaBulanSingkat: ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
 
     // ===== INIT =====
     init() {
-        // Pre-fill settings
         document.getElementById('sb-url').value = this.SB_URL;
         document.getElementById('sb-key').value = this.SB_KEY;
 
-        // Set default date
         document.getElementById('tanggal').valueAsDate = new Date();
+        
         const now = new Date();
         document.getElementById('bulan-iuran').value = now.getMonth() + 1;
-        document.getElementById('tahun-iuran').value = now.getFullYear();
+        this.generateTahunOptions();
 
-        // Connect or load local
         if (this.SB_URL && this.SB_KEY) {
             this.initSupabase();
             this.testConnection();
@@ -36,9 +35,26 @@ const app = {
             this.updateStatus('offline', '⚠️ Offline - Setup Supabase di Pengaturan');
         }
 
-        // Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(console.error);
+        }
+    },
+
+    // ===== GENERATE TAHUN DROPDOWN =====
+    generateTahunOptions() {
+        const select = document.getElementById('tahun-iuran');
+        select.innerHTML = '<option value="">Pilih Tahun</option>';
+        
+        const tahunSekarang = new Date().getFullYear();
+        const tahunAwal = tahunSekarang - 1;
+        const tahunAkhir = tahunSekarang + 5;
+        
+        for (let t = tahunAwal; t <= tahunAkhir; t++) {
+            const opt = document.createElement('option');
+            opt.value = t;
+            opt.textContent = t;
+            if (t === tahunSekarang) opt.selected = true;
+            select.appendChild(opt);
         }
     },
 
@@ -144,6 +160,9 @@ const app = {
         document.getElementById(id).classList.add('active');
         if (id === 'modal-input') {
             document.getElementById('tanggal').valueAsDate = new Date();
+            const now = new Date();
+            document.getElementById('bulan-iuran').value = now.getMonth() + 1;
+            this.generateTahunOptions();
         }
     },
 
@@ -153,6 +172,11 @@ const app = {
         document.getElementById('form-warga').reset();
         document.getElementById('edit-id').value = '';
         document.getElementById('edit-warga-id').value = '';
+        
+        // Reset dropdown ke default
+        const now = new Date();
+        document.getElementById('bulan-iuran').value = now.getMonth() + 1;
+        this.generateTahunOptions();
     },
 
     // ===== WARGA DROPDOWN =====
@@ -203,7 +227,6 @@ const app = {
         document.getElementById('dash-warga-aktif').textContent = wargaAktif.length;
         document.getElementById('dash-warga-tunggak').textContent = this.transaksi.filter(t => t.status === 'nunggak').length;
 
-        // Recent transactions
         const recent = [...this.transaksi].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 5);
         const container = document.getElementById('dash-transaksi');
 
@@ -223,7 +246,11 @@ const app = {
                 </div>
                 <div class="list-content">
                     <div class="list-title">${t.atas_nama || t.no_rumah || '-'}</div>
-                    <div class="list-subtitle">${new Date(t.tanggal).toLocaleDateString('id-ID')} • ${t.status}</div>
+                    <div class="list-subtitle">
+                        ${new Date(t.tanggal).toLocaleDateString('id-ID')} • 
+                        ${t.bulan_iuran ? this.namaBulanSingkat[t.bulan_iuran] : ''} ${t.tahun_iuran || ''} • 
+                        ${t.status}
+                    </div>
                 </div>
                 <div class="list-amount ${t.jenis === 'masuk' ? 'income' : 'expense'}">
                     ${t.jenis === 'masuk' ? '+' : '-'}${this.formatRp(t.nominal)}
@@ -254,8 +281,9 @@ const app = {
                 <div class="list-content">
                     <div class="list-title">${t.atas_nama || '-'}</div>
                     <div class="list-subtitle">
-                        ${t.no_rumah || '-'} • ${new Date(t.tanggal).toLocaleDateString('id-ID')}
-                        ${t.bulan_iuran ? `• ${this.namaBulan[t.bulan_iuran]} ${t.tahun_iuran}` : ''}
+                        ${t.no_rumah || '-'} • 
+                        ${this.namaBulanSingkat[t.bulan_iuran] || ''} ${t.tahun_iuran || ''} • 
+                        ${new Date(t.tanggal).toLocaleDateString('id-ID')}
                     </div>
                 </div>
                 <div style="text-align: right;">
@@ -416,15 +444,27 @@ const app = {
     editTransaksi(id) {
         const t = this.transaksi.find(x => x.id === id);
         if (!t) return;
+        
         document.getElementById('edit-id').value = t.id;
         document.getElementById('warga-id').value = t.warga_id || '';
         document.getElementById('no-rumah').value = t.no_rumah || '';
         document.getElementById('nominal').value = t.nominal;
         document.getElementById('tanggal').value = t.tanggal;
-        document.getElementById('bulan-iuran').value = t.bulan_iuran || '';
-        document.getElementById('tahun-iuran').value = t.tahun_iuran || '';
         document.getElementById('status-bayar').value = t.status;
         document.getElementById('catatan').value = t.catatan || '';
+        
+        // Set dropdown bulan & tahun
+        document.getElementById('bulan-iuran').value = t.bulan_iuran || '';
+        
+        // Regenerate tahun options dan set selected
+        this.generateTahunOptions();
+        if (t.tahun_iuran) {
+            const tahunSelect = document.getElementById('tahun-iuran');
+            if ([...tahunSelect.options].some(o => o.value == t.tahun_iuran)) {
+                tahunSelect.value = t.tahun_iuran;
+            }
+        }
+        
         this.openModal('modal-input');
     },
 
