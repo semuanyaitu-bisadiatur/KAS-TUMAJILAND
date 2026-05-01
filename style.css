@@ -429,3 +429,49 @@ body {
     .info-item .value { font-size: 16px; }
     .stat-box .stat-value { font-size: 22px; }
 }
+/* ===== UPDATE TOAST ===== */
+.update-toast {
+    position: fixed;
+    top: 60px;
+    left: 16px;
+    right: 16px;
+    z-index: 3000;
+    animation: slideDown 0.5s;
+}
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.update-content {
+    background: linear-gradient(135deg, var(--primary), #764ba2);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-lg);
+    font-size: 14px;
+    font-weight: 600;
+}
+.update-content button {
+    background: white;
+    color: var(--primary);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ===== VERSION INFO ===== */
+.version-info {
+    position: fixed;
+    top: 4px;
+    right: 8px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    z-index: 101;
+    font-weight: 600;
+}
