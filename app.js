@@ -395,23 +395,30 @@ const app = {
             return;
         }
 
+        const TAHUN_MULAI = 2025; // Tahun awal sistem mulai
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth() + 1;
 
         container.innerHTML = sorted.map(w => {
-            // Hitung tunggakan otomatis untuk list
+            // Hitung tunggakan dari tahun 2025
             let bulanBelumBayar = 0;
-            for (let i = 1; i <= currentMonth; i++) {
-                const sudahBayar = this.transaksi.find(t => 
-                    t.warga_id === w.id && 
-                    t.tahun_iuran == currentYear && 
-                    t.bulan_iuran == i && 
-                    t.status === 'lunas' &&
-                    t.jenis === 'masuk'
-                );
-                if (!sudahBayar) bulanBelumBayar++;
+            
+            for (let y = TAHUN_MULAI; y <= currentYear; y++) {
+                let batasBulan = (y === currentYear) ? currentMonth : 12;
+                for (let m = 1; m <= batasBulan; m++) {
+                    const sudahBayar = this.transaksi.find(t => 
+                        t.warga_id === w.id && 
+                        t.tahun_iuran == y && 
+                        t.bulan_iuran == m && 
+                        t.status === 'lunas' &&
+                        t.jenis === 'masuk' &&
+                        (!t.kategori || t.kategori === 'iuran-rutin')
+                    );
+                    if (!sudahBayar) bulanBelumBayar++;
+                }
             }
+            
             const tunggakan = bulanBelumBayar * (w.iuran_bulanan || 0);
 
             return `
@@ -756,36 +763,44 @@ const app = {
 
         const container = document.getElementById('content-detail-warga');
         
-        // --- LOGIKA TUNGGAKAN OTOMATIS TAHUN INI ---
+        // --- LOGIKA TUNGGAKAN MULTI-TAHUN ---
+        const TAHUN_MULAI = 2025; // Tahun awal sistem mulai menghitung iuran
         const now = new Date();
         const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth() + 1; // Bulan 1 (Jan) sampai bulan saat ini
+        const currentMonth = now.getMonth() + 1; 
         
         let bulanBelumBayar = 0;
         let detailBulanTunggak = [];
 
-        // Cek dari Januari sampai bulan saat ini
-        for (let i = 1; i <= currentMonth; i++) {
-            const sudahBayar = this.transaksi.find(t => 
-                t.warga_id === w.id && 
-                t.tahun_iuran == currentYear && 
-                t.bulan_iuran == i && 
-                t.status === 'lunas' &&
-                t.jenis === 'masuk'
-            );
+        // Looping dari tahun 2025 sampai tahun ini
+        for (let y = TAHUN_MULAI; y <= currentYear; y++) {
+            // Jika tahun yang dicek adalah tahun ini, batasnya bulan ini. Jika tahun lalu, batasnya 12 (Desember)
+            let batasBulan = (y === currentYear) ? currentMonth : 12;
             
-            if (!sudahBayar) {
-                bulanBelumBayar++;
-                detailBulanTunggak.push(this.namaBulanSingkat[i]);
+            for (let m = 1; m <= batasBulan; m++) {
+                const sudahBayar = this.transaksi.find(t => 
+                    t.warga_id === w.id && 
+                    t.tahun_iuran == y && 
+                    t.bulan_iuran == m && 
+                    t.status === 'lunas' &&
+                    t.jenis === 'masuk' &&
+                    (!t.kategori || t.kategori === 'iuran-rutin')
+                );
+                
+                if (!sudahBayar) {
+                    bulanBelumBayar++;
+                    // Format tulisan: "Jan 25", "Feb 26" agar tidak terlalu panjang
+                    detailBulanTunggak.push(`${this.namaBulanSingkat[m]} ${y.toString().slice(-2)}`);
+                }
             }
         }
 
         const totalTunggakan = bulanBelumBayar * (w.iuran_bulanan || 0);
         
-        // Format teks tunggakan (Contoh: Rp100.000 (Jan, Feb))
+        // Format teks tunggakan
         let teksTunggakan = `<span style="color: var(--success);">Tidak ada (Lunas)</span>`;
         if (bulanBelumBayar > 0) {
-            teksTunggakan = `${this.formatRp(totalTunggakan)} <span style="font-size: 11px; font-weight: normal; color: var(--gray);">(${detailBulanTunggak.join(', ')})</span>`;
+            teksTunggakan = `${this.formatRp(totalTunggakan)} <br><span style="font-size: 11px; font-weight: normal; color: var(--gray);">(${detailBulanTunggak.join(', ')})</span>`;
         }
 
         container.innerHTML = `
@@ -795,7 +810,7 @@ const app = {
                 <div style="color: var(--gray);">Iuran Bulanan</div><div>: ${this.formatRp(w.iuran_bulanan)}</div>
                 <div style="color: var(--gray);">No. HP</div><div>: ${w.hp || '-'}</div>
                 <div style="color: var(--gray);">Status</div><div>: ${w.status.toUpperCase()}</div>
-                <div style="color: var(--gray);">Tunggakan</div><div style="color: var(--danger); font-weight: bold;">: ${teksTunggakan}</div>
+                <div style="color: var(--gray);">Tunggakan</div><div style="color: var(--danger); font-weight: bold; line-height: 1.4;">: ${teksTunggakan}</div>
             </div>
         `;
 
