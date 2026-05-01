@@ -966,12 +966,12 @@ const app = {
         const tahun = document.getElementById('rekap-tahun-select').value;
         let csv = `REKAP IURAN WARGA TAHUN ${tahun}\n\n`;
         
-        // Membuat Header Kolom (No. Rumah, Nama, Jan, Feb, ... Des)
+        // Membuat Header Kolom
         const headers = ['No. Rumah', 'Nama'];
         for (let i = 1; i <= 12; i++) {
             headers.push(this.namaBulan[i]);
         }
-        csv += headers.join(',') + '\n';
+        csv += headers.join(';') + '\n';
         
         // Mengambil data warga aktif
         const wargaAktif = this.warga.filter(w => w.status === 'aktif')
@@ -982,16 +982,10 @@ const app = {
             let row = [w.no_rumah, w.nama];
             
             for (let bulan = 1; bulan <= 12; bulan++) {
-                const lunas = this.transaksi.find(t => 
-                    t.warga_id === w.id && 
-                    t.tahun_iuran == tahun && 
-                    t.bulan_iuran == bulan && 
-                    t.status === 'lunas'
-                );
-                // Jika lunas tulis 'LUNAS', jika tidak tulis '-'
+                // ...
                 row.push(lunas ? 'LUNAS' : '-');
             }
-            csv += row.join(',') + '\n';
+            csv += row.join(';') + '\n'; // Diganti menjadi titik koma (;)
         });
 
         // Proses Download File
