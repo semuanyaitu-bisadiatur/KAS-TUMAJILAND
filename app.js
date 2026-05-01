@@ -1012,7 +1012,53 @@ const app = {
         link.click();
         document.body.removeChild(link);
     },
+    
+ // ===== EXPORT PENGELUARAN =====
+    exportPengeluaranCSV() {
+        let csv = 'LAPORAN DATA PENGELUARAN\n\n';
+        
+        // Membuat Header
+        csv += 'Tanggal;Keterangan / Keperluan;Nominal (Rp)\n';
+        
+        // Ambil data yang hanya jenisnya "keluar", urutkan dari yang paling lama ke terbaru
+        const pengeluaran = this.transaksi
+            .filter(t => t.jenis === 'keluar')
+            .sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+            
+        if (pengeluaran.length === 0) {
+            alert('Belum ada data pengeluaran yang bisa diexport.');
+            return;
+        }
 
+        let totalPengeluaran = 0;
+
+        // Masukkan data ke baris-baris CSV
+        pengeluaran.forEach(t => {
+            // Ubah format tanggal agar lebih enak dibaca di Excel (contoh: 2026-05-20)
+            const tgl = new Date(t.tanggal).toLocaleDateString('id-ID'); 
+            const keterangan = t.atas_nama || t.catatan || '-';
+            const nominal = t.nominal;
+            
+            csv += `${tgl};${keterangan};${nominal}\n`;
+            totalPengeluaran += nominal;
+        });
+
+        // Tambahkan baris Total di paling bawah
+        csv += `\n;TOTAL PENGELUARAN;${totalPengeluaran}\n`;
+
+        // Proses Download File
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Laporan_Pengeluaran_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+    
     importCSV(input) {
         const file = input.files[0];
         if (!file) return;
