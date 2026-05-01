@@ -478,12 +478,12 @@ const app = {
     },
 
     applyAdminStatus() {
-        // Daftar ID tombol yang harus disembunyikan/munculkan
         const elements = {
             'btn-edit-warga-header': this.isAdmin ? 'block' : 'none',
             'btn-lanjut-edit': this.isAdmin ? 'block' : 'none',
             'btn-tambah-warga': this.isAdmin ? 'block' : 'none',
-            'btn-group-transaksi': this.isAdmin ? 'flex' : 'none'
+            'btn-group-transaksi': this.isAdmin ? 'flex' : 'none',
+            'danger-zone-card': this.isAdmin ? 'block' : 'none' // Tambahkan ini
         };
 
         for (const [id, displayValue] of Object.entries(elements)) {
@@ -491,7 +491,6 @@ const app = {
             if (el) el.style.display = displayValue;
         }
         
-        // Filter ikon gembok (abu-abu jika terkunci, berwarna jika terbuka)
         const lockBtn = document.querySelector('button[onclick="app.mintaAksesAdmin()"]');
         if (lockBtn) lockBtn.style.filter = this.isAdmin ? 'grayscale(0)' : 'grayscale(1)';
     },
@@ -983,6 +982,10 @@ const app = {
         const wId = document.getElementById('kartu-warga-id').value;
         const tahun = document.getElementById('kartu-tahun').value;
         const grid = document.getElementById('grid-kartu-iuran');
+        const instruksi = document.querySelector('#modal-kartu-iuran p');
+        if (instruksi) {
+            instruksi.style.display = this.isAdmin ? 'block' : 'none';
+        }
         grid.innerHTML = '';
 
         const trx = this.transaksi.filter(t => t.warga_id === wId && t.tahun_iuran == tahun && t.status === 'lunas' && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin'));
@@ -1004,6 +1007,11 @@ const app = {
     },
 
     async toggleIuran(wId, tahun, bulan) {
+        // --- TAMBAHKAN PENGECEKAN INI ---
+        if (!this.isAdmin) {
+            alert('Akses Ditolak: Hanya Admin yang dapat mengubah status pembayaran.');
+            return;
+        }
         const warga = this.warga.find(w => w.id === wId);
         const trxIndex = this.transaksi.findIndex(t => t.warga_id === wId && t.tahun_iuran == tahun && t.bulan_iuran == bulan && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin'));
 
