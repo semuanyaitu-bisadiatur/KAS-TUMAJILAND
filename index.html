@@ -96,8 +96,14 @@
 
         <!-- PAGE: TRANSAKSI -->
         <div class="page" id="page-transaksi">
-            <button class="btn btn-primary" onclick="app.openModal('modal-input')" style="margin-bottom: 16px;">
-                ➕ Input Iuran
+            <div class="btn-group" style="margin-bottom: 16px;">
+                <button class="btn btn-primary" onclick="app.openModal('modal-input')">
+                    ➕ Input Iuran
+                </button>
+                <button class="btn btn-danger" onclick="app.openModal('modal-pengeluaran')">
+                    ➖ Pengeluaran
+                </button>
+            </div>
             </button>
             <div class="card">
                 <div class="card-title">📑 Riwayat Transaksi</div>
@@ -313,7 +319,36 @@
             </form>
         </div>
     </div>
-
+<div class="modal-overlay" id="modal-pengeluaran">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title" style="color: var(--danger);">💸 Input Pengeluaran</div>
+                <button class="modal-close" onclick="app.closeModal('modal-pengeluaran')">✕</button>
+            </div>
+            <form id="form-pengeluaran" onsubmit="app.savePengeluaran(event)">
+                <input type="hidden" id="edit-pengeluaran-id">
+                
+                <div class="form-group">
+                    <label class="form-label">Tanggal Pengeluaran</label>
+                    <input type="date" id="tgl-pengeluaran" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input type="number" id="nominal-pengeluaran" class="form-input" required min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Keterangan / Keperluan</label>
+                    <input type="text" id="keterangan-pengeluaran" class="form-input" required placeholder="Contoh: Perbaikan gerbang, bayar listrik">
+                </div>
+                
+                <button type="submit" class="btn btn-danger" id="btn-save-pengeluaran">
+                    💾 Simpan ke Cloud
+                </button>
+            </form>
+        </div>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>
