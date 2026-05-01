@@ -2,7 +2,7 @@
 // 🔥 EDIT VERSI DI FILE INI SAJA!
 // ============================================
 
-const APP_VERSION = '1.1.2';  // ← GANTI INI SAJA SETIAP UPDATE
+const APP_VERSION = '1.1.3';  // ← GANTI INI SAJA SETIAP UPDATE
 
 // Auto-generate cache name dari versi
 const CACHE_NAME = 'kas-perumahan-' + APP_VERSION.replace(/\./g, '-');
