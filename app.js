@@ -339,7 +339,8 @@ const app = {
         }
 
         container.innerHTML = recent.map(t => `
-            <div class="list-item"> <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
+            <div class="list-item" onclick="app.showDetailTransaksi('${t.id}')"> 
+                <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
                     ${t.jenis === 'masuk' ? '💰' : '💸'}
                 </div>
                 <div class="list-content">
@@ -390,7 +391,8 @@ const app = {
         }
 
         container.innerHTML = sorted.map(t => `
-            <div class="list-item"> <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
+            <div class="list-item" onclick="app.showDetailTransaksi('${t.id}')"> 
+                <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
                     ${t.jenis === 'masuk' ? '💰' : '💸'}
                 </div>
                 <div class="list-content">
@@ -720,7 +722,47 @@ const app = {
             this.openModal('modal-input');
         }
     },
+  // ===== TAMPILKAN DETAIL TRANSAKSI =====
+    showDetailTransaksi(id) {
+        const t = this.transaksi.find(x => x.id === id);
+        if (!t) return;
 
+        const container = document.getElementById('content-detail-transaksi');
+        const isMasuk = t.jenis === 'masuk';
+        
+        // Membangun tampilan isi detail
+        container.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 40px;">${isMasuk ? '💰' : '💸'}</div>
+                <div style="font-size: 24px; font-weight: 800; color: ${isMasuk ? '#11998e' : '#eb3349'};">
+                    ${isMasuk ? '+' : '-'}${this.formatRp(t.nominal)}
+                </div>
+                <div class="badge badge-${t.status === 'lunas' ? 'green' : t.status === 'nunggak' ? 'yellow' : 'red'}" style="margin-top: 8px;">
+                    ${t.status.toUpperCase()}
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 100px 1fr; gap: 12px; color: var(--dark); background: var(--light); padding: 16px; border-radius: 12px;">
+                <div style="color: var(--gray); font-weight: 600;">Kategori</div><div>: ${t.kategori === 'pemasukan-lain' ? 'Pemasukan Lain' : t.kategori === 'pengeluaran-umum' ? 'Pengeluaran' : 'Iuran Rutin'}</div>
+                <div style="color: var(--gray); font-weight: 600;">Nama/Ket.</div><div style="font-weight: 700;">: ${t.atas_nama || '-'}</div>
+                <div style="color: var(--gray); font-weight: 600;">No. Rumah</div><div>: ${t.no_rumah || '-'}</div>
+                <div style="color: var(--gray); font-weight: 600;">Tanggal</div><div>: ${new Date(t.tanggal).toLocaleDateString('id-ID', { dateStyle: 'full' })}</div>
+                <div style="color: var(--gray); font-weight: 600;">Periode</div><div>: ${t.bulan_iuran ? this.namaBulan[t.bulan_iuran] : '-'} ${t.tahun_iuran || ''}</div>
+                <div style="color: var(--gray); font-weight: 600;">Catatan</div><div>: ${t.catatan || '-'}</div>
+            </div>
+        `;
+
+        // Atur tombol edit agar mengarah ke fungsi edit yang sudah ada
+        const btnEdit = document.getElementById('btn-lanjut-edit');
+        if (btnEdit) {
+            btnEdit.onclick = () => {
+                this.closeModal('modal-detail-transaksi');
+                this.editTransaksi(id);
+            };
+        }
+
+        this.openModal('modal-detail-transaksi');
+    },
+    
     editWarga(id) {
         const w = this.warga.find(x => x.id === id);
         if (!w) return;
