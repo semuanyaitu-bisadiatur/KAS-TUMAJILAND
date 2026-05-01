@@ -298,11 +298,10 @@
         </div>
     </div>
 
-    <!-- MODAL: INPUT WARGA -->
     <div class="modal-overlay" id="modal-warga">
         <div class="modal-sheet">
             <div class="modal-header">
-                <div class="modal-title">👥 Tambah Warga</div>
+                <div class="modal-title">👥 Form Warga</div>
                 <button class="modal-close" onclick="app.closeModal('modal-warga')">✕</button>
             </div>
             <form id="form-warga" onsubmit="app.saveWarga(event)">
@@ -337,10 +336,6 @@
                         <option value="sewa">🟡 Penyewa</option>
                     </select>
                 </div>
-                
-                <button type="button" class="btn btn-outline" id="btn-lihat-kartu" onclick="app.bukaKartuIuran()" style="margin-bottom: 10px; display: none;">
-                    📅 Lihat Checklist Iuran
-                </button>
                 
                 <button type="submit" class="btn btn-primary">💾 Simpan ke Cloud</button>
             </form>
@@ -441,6 +436,31 @@
                 
                 <button class="btn btn-primary" id="btn-lanjut-edit" style="background: var(--warning);">
                     ✏️ Ubah Data
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-detail-warga">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title">🏠 Detail Warga</div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="btn-edit-warga-header" style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 5px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold;">
+                        ✏️ Edit
+                    </button>
+                    <button class="modal-close" onclick="app.closeModal('modal-detail-warga')">✕</button>
+                </div>
+            </div>
+            
+            <div id="content-detail-warga" style="line-height: 1.8; font-size: 14px; margin-bottom: 20px;">
+                </div>
+
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 10px;">
+                <button type="button" class="btn btn-outline" id="btn-lihat-kartu-detail" onclick="app.bukaKartuIuran()">
+                    📅 Lihat Checklist Iuran
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" id="btn-hapus-warga" style="background: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2;">
+                    🗑️ Hapus Data Warga
                 </button>
             </div>
         </div>
