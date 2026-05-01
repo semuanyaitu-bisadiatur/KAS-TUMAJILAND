@@ -611,7 +611,7 @@ const app = {
     async saveWarga(e) {
         e.preventDefault();
         const data = {
-            id: document.getElementById('edit-warga-id').value || 'W-' + (this.nextId++),
+            id: document.getElementById('edit-warga-id').value || 'W-' + Date.now(),
             nama: document.getElementById('warga-nama').value,
             no_rumah: document.getElementById('warga-no-rumah').value,
             hp: document.getElementById('warga-hp').value,
