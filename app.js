@@ -1,18 +1,21 @@
-// ===== KAS PERUMAHAN - APP LOGIC =====
-// APP_VERSION sudah didefinisikan di version.js (global)
+// ============================================
+// KAS PERUMAHAN - APP LOGIC
+// ============================================
+
+// 🔥 SUPABASE CONFIG - EDIT DI SINI SAJA!
+const SUPABASE_CONFIG = {
+    URL: 'https://syjtzpatlajsvypzmenf.supabase.co',  // ← GANTI DENGAN URL ANDA
+    KEY: 'sb_publishable_0iEGc2Ec4m_fMHyz0HoHFg_jyDJTiVn'                      // ← GANTI DENGAN API KEY ANDA
+};
 
 const app = {
-    // Ambil versi dari global variable (dari version.js)
-    get VERSION() { return typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0'; },
-    get CACHE_NAME() { return typeof CACHE_NAME !== 'undefined' ? CACHE_NAME : 'kas-perumahan-1-0-0'; },
-    
+    // ===== VERSION CONTROL =====
+    VERSION: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
     VERSION_KEY: 'app_version',
 
-    // Supabase
+    // Supabase (langsung dari config di atas)
     supabase: null,
     isConnected: false,
-    SB_URL: localStorage.getItem('sb_url') || '',
-    SB_KEY: localStorage.getItem('sb_key') || '',
 
     // Data
     warga: [],
@@ -25,28 +28,19 @@ const app = {
 
     // ===== INIT =====
     init() {
-        // Tampilkan versi di UI
+        // Tampilkan versi
         this.showVersion();
-        
-        // Cek update
         this.checkVersion();
 
-        document.getElementById('sb-url').value = this.SB_URL;
-        document.getElementById('sb-key').value = this.SB_KEY;
-
+        // Set tanggal default
         document.getElementById('tanggal').valueAsDate = new Date();
-        
         const now = new Date();
         document.getElementById('bulan-iuran').value = now.getMonth() + 1;
         this.generateTahunOptions();
 
-        if (this.SB_URL && this.SB_KEY) {
-            this.initSupabase();
-            this.testConnection();
-        } else {
-            this.loadLocal();
-            this.updateStatus('offline', '⚠️ Offline - Setup Supabase di Pengaturan');
-        }
+        // Auto-connect Supabase (langsung dari config)
+        this.initSupabase();
+        this.testConnection();
 
         // Register SW
         if ('serviceWorker' in navigator) {
@@ -66,82 +60,24 @@ const app = {
         }
     },
 
-    // ===== VERSION DISPLAY =====
-    showVersion() {
-        document.getElementById('version-display').textContent = 'v' + this.VERSION;
-        document.getElementById('app-version').textContent = this.VERSION;
-        document.getElementById('cache-name').textContent = this.CACHE_NAME;
-    },
-
-    // ===== VERSION CHECK =====
-    checkVersion() {
-        const savedVersion = localStorage.getItem(this.VERSION_KEY);
-        
-        if (savedVersion && savedVersion !== this.VERSION) {
-            this.showUpdateToast();
-        }
-        
-        localStorage.setItem(this.VERSION_KEY, this.VERSION);
-    },
-
-    showUpdateToast() {
-        document.getElementById('update-toast').classList.remove('hidden');
-    },
-
-    // ===== CHECK UPDATE (Manual) =====
-    async checkUpdate() {
-        const btn = event.target;
-        btn.textContent = '⏳...';
-        btn.disabled = true;
-
-        try {
-            // Hapus cache lama
-            const keys = await caches.keys();
-            await Promise.all(keys.map(key => caches.delete(key)));
-            
-            // Unregister SW
-            const regs = await navigator.serviceWorker.getRegistrations();
-            await Promise.all(regs.map(reg => reg.unregister()));
-            
-            alert('✅ Update diterapkan! Halaman akan dimuat ulang.');
-            window.location.reload(true);
-        } catch(err) {
-            alert('❌ Gagal: ' + err.message);
-            btn.textContent = '🔄 Cek Update';
-            btn.disabled = false;
-        }
-    },
-
-    // ===== GENERATE TAHUN =====
-    generateTahunOptions() {
-        const select = document.getElementById('tahun-iuran');
-        select.innerHTML = '<option value="">Pilih Tahun</option>';
-        
-        const tahunSekarang = new Date().getFullYear();
-        for (let t = tahunSekarang - 1; t <= tahunSekarang + 5; t++) {
-            const opt = document.createElement('option');
-            opt.value = t;
-            opt.textContent = t;
-            if (t === tahunSekarang) opt.selected = true;
-            select.appendChild(opt);
-        }
-    },
-
     // ===== SUPABASE =====
     initSupabase() {
-        if (!this.SB_URL || !this.SB_KEY) return false;
         try {
-            this.supabase = window.supabase.createClient(this.SB_URL, this.SB_KEY);
+            // Sanitasi URL
+            let cleanUrl = SUPABASE_CONFIG.URL.trim()
+                .replace(/\/$/, '')
+                .replace(/\/rest\/v1\/?$/, '');
+            
+            this.supabase = window.supabase.createClient(cleanUrl, SUPABASE_CONFIG.KEY);
             return true;
-        } catch(e) { return false; }
+        } catch(e) { 
+            console.error('Supabase init error:', e);
+            return false; 
+        }
     },
 
     async testConnection() {
-        if (!this.initSupabase()) {
-            this.updateStatus('offline', '❌ URL/Key belum diisi');
-            return;
-        }
-        this.updateStatus('syncing', '⏳ Menghubungkan...');
+        this.updateStatus('syncing', '⏳ Menghubungkan ke Supabase...');
 
         try {
             const { error } = await this.supabase.from('warga').select('count', { count: 'exact' }).limit(1);
@@ -159,8 +95,11 @@ const app = {
 
     async loadAllData() {
         try {
-            const { data: w } = await this.supabase.from('warga').select('*').order('no_rumah');
-            const { data: t } = await this.supabase.from('transaksi').select('*').order('tanggal', { ascending: false });
+            const { data: w, error: wErr } = await this.supabase.from('warga').select('*').order('no_rumah');
+            const { data: t, error: tErr } = await this.supabase.from('transaksi').select('*').order('tanggal', { ascending: false });
+
+            if (wErr) throw wErr;
+            if (tErr) throw tErr;
 
             this.warga = w || [];
             this.transaksi = t || [];
@@ -170,6 +109,7 @@ const app = {
             this.renderListTransaksi();
             this.renderListWarga();
         } catch(err) {
+            console.error('Load data error:', err);
             this.loadLocal();
         }
     },
@@ -188,6 +128,48 @@ const app = {
         localStorage.setItem('kasNextId', this.nextId);
     },
 
+    // ===== VERSION CONTROL =====
+    showVersion() {
+        const v = document.getElementById('version-display');
+        const av = document.getElementById('app-version');
+        if (v) v.textContent = 'v' + this.VERSION;
+        if (av) av.textContent = this.VERSION;
+    },
+
+    checkVersion() {
+        const saved = localStorage.getItem(this.VERSION_KEY);
+        if (saved && saved !== this.VERSION) {
+            this.showUpdateToast();
+        }
+        localStorage.setItem(this.VERSION_KEY, this.VERSION);
+    },
+
+    showUpdateToast() {
+        const toast = document.getElementById('update-toast');
+        if (toast) toast.classList.remove('hidden');
+    },
+
+    async checkUpdate() {
+        const btn = event.target;
+        btn.textContent = '⏳...';
+        btn.disabled = true;
+
+        try {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+            
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(reg => reg.unregister()));
+            
+            alert('✅ Update diterapkan! Halaman akan dimuat ulang.');
+            location.reload(true);
+        } catch(err) {
+            alert('❌ Gagal: ' + err.message);
+            btn.textContent = '🔄 Cek Update';
+            btn.disabled = false;
+        }
+    },
+
     // ===== UI HELPERS =====
     formatRp(n) {
         if (!n && n !== 0) return 'Rp0';
@@ -196,8 +178,10 @@ const app = {
 
     updateStatus(type, msg) {
         const bar = document.getElementById('status-bar');
-        bar.className = 'status-bar status-' + type;
-        bar.textContent = msg;
+        if (bar) {
+            bar.className = 'status-bar status-' + type;
+            bar.textContent = msg;
+        }
     },
 
     // ===== NAVIGATION =====
@@ -247,9 +231,28 @@ const app = {
         this.generateTahunOptions();
     },
 
+    // ===== GENERATE TAHUN =====
+    generateTahunOptions() {
+        const select = document.getElementById('tahun-iuran');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Pilih Tahun</option>';
+        const tahunSekarang = new Date().getFullYear();
+        
+        for (let t = tahunSekarang - 1; t <= tahunSekarang + 5; t++) {
+            const opt = document.createElement('option');
+            opt.value = t;
+            opt.textContent = t;
+            if (t === tahunSekarang) opt.selected = true;
+            select.appendChild(opt);
+        }
+    },
+
     // ===== WARGA DROPDOWN =====
     updateWargaDropdown() {
         const select = document.getElementById('warga-id');
+        if (!select) return;
+        
         select.innerHTML = '<option value="">Pilih Warga</option>';
         this.warga.filter(w => w.status === 'aktif')
             .sort((a,b) => a.no_rumah.localeCompare(b.no_rumah))
@@ -286,17 +289,29 @@ const app = {
         const wargaAktif = this.warga.filter(w => w.status === 'aktif');
         const target = wargaAktif.reduce((s, w) => s + (w.iuran_bulanan || 0), 0);
 
-        document.getElementById('dash-masuk').textContent = this.formatRp(masuk);
-        document.getElementById('dash-keluar').textContent = this.formatRp(keluar);
-        document.getElementById('dash-saldo').textContent = this.formatRp(masuk - keluar);
-        document.getElementById('dash-target').textContent = this.formatRp(target);
+        const dashMasuk = document.getElementById('dash-masuk');
+        const dashKeluar = document.getElementById('dash-keluar');
+        const dashSaldo = document.getElementById('dash-saldo');
+        const dashTarget = document.getElementById('dash-target');
 
-        document.getElementById('dash-warga-total').textContent = this.warga.length;
-        document.getElementById('dash-warga-aktif').textContent = wargaAktif.length;
-        document.getElementById('dash-warga-tunggak').textContent = this.transaksi.filter(t => t.status === 'nunggak').length;
+        if (dashMasuk) dashMasuk.textContent = this.formatRp(masuk);
+        if (dashKeluar) dashKeluar.textContent = this.formatRp(keluar);
+        if (dashSaldo) dashSaldo.textContent = this.formatRp(masuk - keluar);
+        if (dashTarget) dashTarget.textContent = this.formatRp(target);
 
+        const dashTotal = document.getElementById('dash-warga-total');
+        const dashAktif = document.getElementById('dash-warga-aktif');
+        const dashTunggak = document.getElementById('dash-warga-tunggak');
+
+        if (dashTotal) dashTotal.textContent = this.warga.length;
+        if (dashAktif) dashAktif.textContent = wargaAktif.length;
+        if (dashTunggak) dashTunggak.textContent = this.transaksi.filter(t => t.status === 'nunggak').length;
+
+        // Recent transactions
         const recent = [...this.transaksi].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 5);
         const container = document.getElementById('dash-transaksi');
+
+        if (!container) return;
 
         if (recent.length === 0) {
             container.innerHTML = `
@@ -330,6 +345,8 @@ const app = {
     // ===== RENDER LIST TRANSAKSI =====
     renderListTransaksi() {
         const container = document.getElementById('list-transaksi');
+        if (!container) return;
+        
         const sorted = [...this.transaksi].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
 
         if (sorted.length === 0) {
@@ -369,6 +386,8 @@ const app = {
     // ===== RENDER LIST WARGA =====
     renderListWarga() {
         const container = document.getElementById('list-warga');
+        if (!container) return;
+        
         const sorted = [...this.warga].sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
 
         if (sorted.length === 0) {
@@ -601,15 +620,6 @@ const app = {
                 ${rows || '<div class="empty"><p>Belum ada data</p></div>'}
             </div>
         `;
-    },
-
-    // ===== PENGATURAN =====
-    saveConfig() {
-        this.SB_URL = document.getElementById('sb-url').value.trim();
-        this.SB_KEY = document.getElementById('sb-key').value.trim();
-        localStorage.setItem('sb_url', this.SB_URL);
-        localStorage.setItem('sb_key', this.SB_KEY);
-        this.testConnection();
     },
 
     // ===== EXPORT/IMPORT =====
