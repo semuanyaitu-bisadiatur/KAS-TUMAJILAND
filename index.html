@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kas Perumahan</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <h1>🏘️ Kas Perumahan</h1>
+        <p id="header-subtitle">Dashboard</p>
+    </header>
+
+    <!-- STATUS -->
+    <div class="status-bar status-offline" id="status-bar">
+        ⏳ Menghubungkan...
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="main-content">
+
+        <!-- PAGE: DASHBOARD -->
+        <div class="page active" id="page-home">
+            <div class="info-grid">
+                <div class="info-item income">
+                    <div class="label">Pemasukan</div>
+                    <div class="value" id="dash-masuk">Rp0</div>
+                </div>
+                <div class="info-item expense">
+                    <div class="label">Pengeluaran</div>
+                    <div class="value" id="dash-keluar">Rp0</div>
+                </div>
+                <div class="info-item balance">
+                    <div class="label">Saldo</div>
+                    <div class="value" id="dash-saldo">Rp0</div>
+                </div>
+                <div class="info-item target">
+                    <div class="label">Target</div>
+                    <div class="value" id="dash-target">Rp0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📋 Transaksi Terbaru</div>
+                <div id="dash-transaksi">
+                    <div class="empty">
+                        <div class="empty-icon">📭</div>
+                        <p>Belum ada transaksi</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline" onclick="app.navigateTo('transaksi')" style="margin-top: 12px;">
+                    Lihat Semua →
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">👥 Ringkasan Warga</div>
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-warga-total">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" style="color: var(--success);" id="dash-warga-aktif">0</div>
+                        <div class="stat-label">Aktif</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" style="color: var(--danger);" id="dash-warga-tunggak">0</div>
+                        <div class="stat-label">Tunggak</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: TRANSAKSI -->
+        <div class="page" id="page-transaksi">
+            <button class="btn btn-primary" onclick="app.openModal('modal-input')" style="margin-bottom: 16px;">
+                ➕ Input Iuran
+            </button>
+            <div class="card">
+                <div class="card-title">📑 Riwayat Transaksi</div>
+                <div id="list-transaksi"></div>
+            </div>
+        </div>
+
+        <!-- PAGE: WARGA -->
+        <div class="page" id="page-warga">
+            <button class="btn btn-primary" onclick="app.openModal('modal-warga')" style="margin-bottom: 16px;">
+                ➕ Tambah Warga
+            </button>
+            <div class="card">
+                <div class="card-title">👥 Daftar Warga</div>
+                <div id="list-warga"></div>
+            </div>
+        </div>
+
+        <!-- PAGE: LAPORAN -->
+        <div class="page" id="page-laporan">
+            <div class="card">
+                <div class="card-title">📊 Pilih Periode</div>
+                <div class="form-group">
+                    <input type="month" id="laporan-bulan" class="form-input" value="2026-05">
+                </div>
+                <button class="btn btn-primary" onclick="app.generateLaporan()" style="margin-bottom: 16px;">
+                    📈 Tampilkan Laporan
+                </button>
+            </div>
+            <div id="laporan-hasil"></div>
+        </div>
+
+        <!-- PAGE: PENGATURAN -->
+        <div class="page" id="page-pengaturan">
+            <div class="card">
+                <div class="card-title">⚙️ Koneksi Supabase</div>
+                <div class="form-group">
+                    <label class="form-label">Supabase URL</label>
+                    <input type="text" id="sb-url" class="form-input" placeholder="https://xxxx.supabase.co">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">API Key</label>
+                    <input type="text" id="sb-key" class="form-input" placeholder="eyJ...">
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="app.saveConfig()">💾 Simpan</button>
+                    <button class="btn btn-outline" onclick="app.testConnection()">🔄 Test</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📤 Backup & Restore</div>
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="app.exportAllCSV()">📥 Export CSV</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📤 Import CSV</button>
+                </div>
+                <input type="file" id="import-file" class="hidden" accept=".csv" onchange="app.importCSV(this)">
+            </div>
+
+            <div class="card danger-zone">
+                <div class="card-title" style="color: #c53030;">⚠️ Zona Berbahaya</div>
+                <button class="btn btn-danger" onclick="app.resetAllData()">
+                    🗑️ Hapus Semua Data
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="app.navigateTo('home')" data-page="home">
+            <span class="icon">🏠</span>
+            <span>Beranda</span>
+        </button>
+        <button class="nav-item" onclick="app.navigateTo('transaksi')" data-page="transaksi">
+            <span class="icon">📋</span>
+            <span>Transaksi</span>
+        </button>
+        <button class="nav-item" onclick="app.navigateTo('warga')" data-page="warga">
+            <span class="icon">👥</span>
+            <span>Warga</span>
+        </button>
+        <button class="nav-item" onclick="app.navigateTo('laporan')" data-page="laporan">
+            <span class="icon">📊</span>
+            <span>Laporan</span>
+        </button>
+        <button class="nav-item" onclick="app.navigateTo('pengaturan')" data-page="pengaturan">
+            <span class="icon">⚙️</span>
+            <span>Setelan</span>
+        </button>
+    </nav>
+
+    <!-- MODAL: INPUT TRANSAKSI -->
+    <div class="modal-overlay" id="modal-input">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title">💰 Input Iuran</div>
+                <button class="modal-close" onclick="app.closeModal('modal-input')">✕</button>
+            </div>
+            <form id="form-transaksi" onsubmit="app.saveTransaksi(event)">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label class="form-label">Warga</label>
+                    <select id="warga-id" class="form-select" required onchange="app.autoFillWarga()">
+                        <option value="">Pilih Warga</option>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label class="form-label">No. Rumah</label>
+                        <input type="text" id="no-rumah" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nominal</label>
+                        <input type="number" id="nominal" class="form-input" required min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" id="tanggal" class="form-input" required>
+                </div>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label class="form-label">Bulan</label>
+                        <input type="number" id="bulan-iuran" class="form-input" min="1" max="12" placeholder="1-12">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tahun</label>
+                        <input type="number" id="tahun-iuran" class="form-input" min="2000" max="2100">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="status-bayar" class="form-select">
+                        <option value="lunas">✅ Lunas</option>
+                        <option value="belum">⏳ Belum</option>
+                        <option value="nunggak">⚠️ Nunggak</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Catatan</label>
+                    <input type="text" id="catatan" class="form-input" placeholder="Opsional">
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn-save-trans">
+                    💾 Simpan ke Cloud
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: INPUT WARGA -->
+    <div class="modal-overlay" id="modal-warga">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title">👥 Tambah Warga</div>
+                <button class="modal-close" onclick="app.closeModal('modal-warga')">✕</button>
+            </div>
+            <form id="form-warga" onsubmit="app.saveWarga(event)">
+                <input type="hidden" id="edit-warga-id">
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" id="warga-nama" class="form-input" required>
+                </div>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label class="form-label">No. Rumah</label>
+                        <input type="text" id="warga-no-rumah" class="form-input" required placeholder="A-12">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Iuran/Bulan</label>
+                        <input type="number" id="warga-iuran" class="form-input" required min="0" value="50000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">No. HP</label>
+                    <input type="tel" id="warga-hp" class="form-input" placeholder="0812...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="warga-status" class="form-select">
+                        <option value="aktif">🟢 Aktif</option>
+                        <option value="pindah">🔴 Pindah</option>
+                        <option value="sewa">🟡 Penyewa</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">💾 Simpan ke Cloud</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
