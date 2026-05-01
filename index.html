@@ -8,17 +8,16 @@
     <!-- VERSION.JS HARUS PERTAMA! -->
     <script src="version.js"></script>
     
-    <!-- Auto cache-buster dari version.js -->
-    <link rel="manifest" id="manifest-link">
-    <link rel="stylesheet" id="style-link">
-    
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="style.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 </head>
 <body>
+
     <!-- UPDATE TOAST -->
     <div id="update-toast" class="update-toast hidden">
         <div class="update-content">
@@ -134,31 +133,6 @@
         <!-- PAGE: PENGATURAN -->
         <div class="page" id="page-pengaturan">
             <div class="card">
-                <div class="card-title">⚙️ Koneksi Supabase</div>
-                <div class="form-group">
-                    <label class="form-label">Supabase URL</label>
-                    <input type="text" id="sb-url" class="form-input" placeholder="https://xxxx.supabase.co">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">API Key</label>
-                    <input type="text" id="sb-key" class="form-input" placeholder="eyJ...">
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-success" onclick="app.saveConfig()">💾 Simpan</button>
-                    <button class="btn btn-outline" onclick="app.testConnection()">🔄 Test</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">📤 Backup & Restore</div>
-                <div class="btn-group">
-                    <button class="btn btn-success" onclick="app.exportAllCSV()">📥 Export CSV</button>
-                    <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📤 Import CSV</button>
-                </div>
-                <input type="file" id="import-file" class="hidden" accept=".csv" onchange="app.importCSV(this)">
-            </div>
-
-            <div class="card">
                 <div class="card-title">ℹ️ Tentang Aplikasi</div>
                 <div style="text-align: center; padding: 10px;">
                     <div style="font-size: 48px; margin-bottom: 10px;">🏘️</div>
@@ -171,6 +145,15 @@
                         🔄 Cek Update
                     </button>
                 </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📤 Backup & Restore</div>
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="app.exportAllCSV()">📥 Export CSV</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📤 Import CSV</button>
+                </div>
+                <input type="file" id="import-file" class="hidden" accept=".csv" onchange="app.importCSV(this)">
             </div>
 
             <div class="card danger-zone">
@@ -331,16 +314,6 @@
         </div>
     </div>
 
-    <!-- Auto set cache-buster dari version.js -->
-    <script>
-        document.getElementById('manifest-link').href = 'manifest.json?v=' + APP_VERSION;
-        document.getElementById('style-link').href = 'style.css?v=' + APP_VERSION;
-    </script>
-    
-    <!-- App JS dengan cache-buster -->
-    <script id="app-script"></script>
-    <script>
-        document.getElementById('app-script').src = 'app.js?v=' + APP_VERSION;
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
