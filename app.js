@@ -185,7 +185,6 @@ const app = {
     },
 
     // ===== NAVIGATION =====
-    // ===== NAVIGATION =====
     navigateTo(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -498,7 +497,8 @@ const app = {
             btn.textContent = '💾 Simpan ke Cloud';
         }
     },
-// ===== SAVE PENGELUARAN =====
+
+    // ===== SAVE PENGELUARAN =====
     async savePengeluaran(e) {
         e.preventDefault();
         const btn = document.getElementById('btn-save-pengeluaran');
@@ -556,7 +556,8 @@ const app = {
             btn.textContent = '💾 Simpan ke Cloud';
         }
     },
-// ===== SAVE PEMASUKAN LAIN =====
+
+    // ===== SAVE PEMASUKAN LAIN =====
     async savePemasukanLain(e) {
         e.preventDefault();
         const btn = document.getElementById('btn-save-pemasukan-lain');
@@ -614,6 +615,7 @@ const app = {
             btn.textContent = '💾 Simpan ke Cloud';
         }
     },
+
     // ===== SAVE WARGA =====
     async saveWarga(e) {
         e.preventDefault();
@@ -698,6 +700,7 @@ const app = {
             this.openModal('modal-input');
         }
     },
+
     editWarga(id) {
         const w = this.warga.find(x => x.id === id);
         if (!w) return;
@@ -708,8 +711,9 @@ const app = {
         document.getElementById('warga-iuran').value = w.iuran_bulanan || 0;
         document.getElementById('warga-status').value = w.status;
         
-        // TAMBAHKAN BARIS INI: Tampilkan tombol checklist jika data sudah ada
-        document.getElementById('btn-lihat-kartu').style.display = 'block';
+        // Tampilkan tombol checklist jika data sudah ada
+        const btnKartu = document.getElementById('btn-lihat-kartu');
+        if(btnKartu) btnKartu.style.display = 'block';
         
         this.openModal('modal-warga');
     },
@@ -770,7 +774,8 @@ const app = {
             </div>
         `;
     },
-  // ===== CHECKLIST KARTU IURAN =====
+
+    // ===== CHECKLIST KARTU IURAN =====
     bukaKartuIuran() {
         const wId = document.getElementById('edit-warga-id').value;
         if (!wId) {
@@ -869,6 +874,51 @@ const app = {
         this.renderDashboard();
         this.renderListTransaksi();
     },
+
+    // ===== FITUR REKAP TAHUNAN =====
+    prepareRekapTahun() {
+        const select = document.getElementById('rekap-tahun-select');
+        if (select && select.innerHTML === '') {
+            const yr = new Date().getFullYear();
+            for (let i = yr - 1; i <= yr + 1; i++) {
+                select.innerHTML += `<option value="${i}" ${i === yr ? 'selected' : ''}>${i}</option>`;
+            }
+        }
+    },
+
+    renderRekapTahunan() {
+        const tahun = document.getElementById('rekap-tahun-select').value;
+        const thead = document.getElementById('thead-rekap');
+        const tbody = document.getElementById('tbody-rekap');
+        if (!thead || !tbody) return;
+
+        // Render Header (Bulan)
+        let headerHtml = `<tr><th>Warga</th>`;
+        for (let i = 1; i <= 12; i++) {
+            headerHtml += `<th>${this.namaBulanSingkat[i]}</th>`;
+        }
+        headerHtml += `</tr>`;
+        thead.innerHTML = headerHtml;
+
+        // Render Baris (Per Warga)
+        const wargaAktif = this.warga.filter(w => w.status === 'aktif').sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
+        
+        tbody.innerHTML = wargaAktif.map(w => {
+            let row = `<tr><td>${w.no_rumah}<br><small>${w.nama.split(' ')[0]}</small></td>`;
+            for (let bulan = 1; bulan <= 12; bulan++) {
+                const lunas = this.transaksi.find(t => 
+                    t.warga_id === w.id && 
+                    t.tahun_iuran == tahun && 
+                    t.bulan_iuran == bulan && 
+                    t.status === 'lunas'
+                );
+                row += `<td style="background: ${lunas ? '#c6f6d5' : '#fff5f5'}">${lunas ? '✅' : '❌'}</td>`;
+            }
+            row += `</tr>`;
+            return row;
+        }).join('');
+    },
+
     // ===== EXPORT/IMPORT =====
     exportAllCSV() {
         let csv = 'Data Warga\nID,Nama,No Rumah,HP,Status,Iuran\n';
@@ -913,47 +963,6 @@ const app = {
         alert('✅ Semua data dihapus');
     }
 };
-renderRekapTahunan() {
-        const tahun = document.getElementById('rekap-tahun-select').value;
-        const thead = document.getElementById('thead-rekap');
-        const tbody = document.getElementById('tbody-rekap');
-        if (!thead || !tbody) return;
-
-        // Render Header (Bulan)
-        let headerHtml = `<tr><th>Warga</th>`;
-        for (let i = 1; i <= 12; i++) {
-            headerHtml += `<th>${this.namaBulanSingkat[i]}</th>`;
-        }
-        headerHtml += `</tr>`;
-        thead.innerHTML = headerHtml;
-
-        // Render Baris (Per Warga)
-        const wargaAktif = this.warga.filter(w => w.status === 'aktif').sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
-        
-        tbody.innerHTML = wargaAktif.map(w => {
-            let row = `<tr><td>${w.no_rumah}<br><small>${w.nama.split(' ')[0]}</small></td>`;
-            for (let bulan = 1; bulan <= 12; bulan++) {
-                const lunas = this.transaksi.find(t => 
-                    t.warga_id === w.id && 
-                    t.tahun_iuran == tahun && 
-                    t.bulan_iuran == bulan && 
-                    t.status === 'lunas'
-                );
-                row += `<td style="background: ${lunas ? '#c6f6d5' : '#fff5f5'}">${lunas ? '✅' : '❌'}</td>`;
-            }
-            row += `</tr>`;
-            return row;
-        }).join('');
-    },
-  prepareRekapTahun() {
-        const select = document.getElementById('rekap-tahun-select');
-        if (select && select.innerHTML === '') {
-            const yr = new Date().getFullYear();
-            for (let i = yr - 1; i <= yr + 1; i++) {
-                select.innerHTML += `<option value="${i}" ${i === yr ? 'selected' : ''}>${i}</option>`;
-            }
-        }
-    },
 
 // ===== START APP =====
 document.addEventListener('DOMContentLoaded', () => app.init());
