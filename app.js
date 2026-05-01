@@ -1,6 +1,10 @@
 // ===== KAS PERUMAHAN - APP LOGIC =====
 
 const app = {
+    // ===== VERSION CONTROL =====
+    VERSION: '1.0.0', // ← NAikkan ini setiap update (contoh: 1.0.1, 1.1.0, 2.0.0)
+    VERSION_KEY: 'app_version',
+    LAST_UPDATE_KEY: 'app_last_update',
     // Supabase
     supabase: null,
     isConnected: false,
