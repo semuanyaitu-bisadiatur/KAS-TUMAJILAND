@@ -404,7 +404,7 @@ const app = {
             const tunggakan = this.transaksi.filter(t => t.warga_id === w.id && t.status === 'nunggak')
                                            .reduce((s,t) => s + t.nominal, 0);
             return `
-            <div class="list-item" onclick="app.editWarga('${w.id}')">
+            return `<div class="list-item" onclick="app.showDetailWarga('${w.id}')">`
                 <div class="list-icon ${w.status === 'aktif' ? 'blue' : w.status === 'pindah' ? 'red' : 'yellow'}">
                     🏠
                 </div>
@@ -1085,6 +1085,59 @@ const app = {
         alert('✅ Semua data dihapus');
     }
 };
+// ===== DETAIL WARGA =====
+    showDetailWarga(id) {
+        const w = this.warga.find(x => x.id === id);
+        if (!w) return;
+
+        const container = document.getElementById('content-detail-warga');
+        const tunggakan = this.transaksi.filter(t => t.warga_id === w.id && t.status === 'nunggak')
+                                       .reduce((s, t) => s + t.nominal, 0);
+
+        container.innerHTML = `
+            <div style="display: grid; grid-template-columns: 110px 1fr; gap: 8px;">
+                <div style="color: var(--gray);">Nama Lengkap</div><div style="font-weight: 700;">: ${w.nama}</div>
+                <div style="color: var(--gray);">No. Rumah</div><div>: ${w.no_rumah}</div>
+                <div style="color: var(--gray);">Iuran Bulanan</div><div>: ${this.formatRp(w.iuran_bulanan)}</div>
+                <div style="color: var(--gray);">No. HP</div><div>: ${w.hp || '-'}</div>
+                <div style="color: var(--gray);">Status</div><div>: ${w.status.toUpperCase()}</div>
+                <div style="color: var(--gray);">Tunggakan</div><div style="color: var(--danger); font-weight: bold;">: ${this.formatRp(tunggakan)}</div>
+            </div>
+        `;
+
+        // Set ID untuk tombol Hapus dan Edit
+        document.getElementById('edit-warga-id').value = w.id; 
+        document.getElementById('btn-hapus-warga').onclick = () => this.deleteWarga(w.id);
+        document.getElementById('btn-edit-warga-header').onclick = () => {
+            this.closeModal('modal-detail-warga');
+            this.editWarga(w.id);
+        };
+
+        this.openModal('modal-detail-warga');
+    },
+
+    async deleteWarga(id) {
+        if (!confirm('Hapus warga ini? Seluruh riwayat transaksi terkait juga akan dihapus.')) return;
+        
+        try {
+            if (this.isConnected && this.supabase) {
+                await this.supabase.from('warga').delete().eq('id', id);
+                await this.supabase.from('transaksi').delete().eq('warga_id', id);
+            }
+            
+            this.warga = this.warga.filter(w => w.id !== id);
+            this.transaksi = this.transaksi.filter(t => t.warga_id !== id);
+            this.saveLocal();
+            
+            this.closeModal('modal-detail-warga');
+            this.renderDashboard();
+            this.renderListWarga();
+            this.updateWargaDropdown();
+            alert('Data warga berhasil dihapus.');
+        } catch(err) {
+            alert('Gagal menghapus: ' + err.message);
+        }
+    },
 
 // ===== START APP =====
 document.addEventListener('DOMContentLoaded', () => app.init());
