@@ -232,7 +232,14 @@ const app = {
     closeModal(id) {
         document.getElementById(id).classList.remove('active');
         if (id === 'modal-input') document.getElementById('form-transaksi').reset();
-        if (id === 'modal-warga') document.getElementById('form-warga').reset();
+        
+        if (id === 'modal-warga') {
+            document.getElementById('form-warga').reset();
+            // Sembunyikan tombol hapus setiap kali form warga ditutup
+            const btnHapus = document.getElementById('btn-hapus-warga-edit');
+            if (btnHapus) btnHapus.style.display = 'none';
+        }
+        
         if (id === 'modal-pengeluaran') document.getElementById('form-pengeluaran').reset();
         if (id === 'modal-pemasukan-lain') document.getElementById('form-pemasukan-lain').reset();
         
@@ -753,6 +760,13 @@ const app = {
         document.getElementById('warga-iuran').value = w.iuran_bulanan || 0;
         document.getElementById('warga-status').value = w.status;
         
+        // Tampilkan tombol hapus saat masuk mode edit
+        const btnHapus = document.getElementById('btn-hapus-warga-edit');
+        if (btnHapus) {
+            btnHapus.style.display = 'block';
+            btnHapus.onclick = () => this.deleteWarga(w.id);
+        }
+        
         this.openModal('modal-warga');
     },
 
@@ -762,9 +776,7 @@ const app = {
         if (!w) return;
 
         const container = document.getElementById('content-detail-warga');
-        
-        // --- LOGIKA TUNGGAKAN MULTI-TAHUN ---
-        const TAHUN_MULAI = 2025; // Tahun awal sistem mulai menghitung iuran
+        const TAHUN_MULAI = 2025;
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth() + 1; 
@@ -772,24 +784,15 @@ const app = {
         let bulanBelumBayar = 0;
         let detailBulanTunggak = [];
 
-        // Looping dari tahun 2025 sampai tahun ini
         for (let y = TAHUN_MULAI; y <= currentYear; y++) {
-            // Jika tahun yang dicek adalah tahun ini, batasnya bulan ini. Jika tahun lalu, batasnya 12 (Desember)
             let batasBulan = (y === currentYear) ? currentMonth : 12;
-            
             for (let m = 1; m <= batasBulan; m++) {
                 const sudahBayar = this.transaksi.find(t => 
-                    t.warga_id === w.id && 
-                    t.tahun_iuran == y && 
-                    t.bulan_iuran == m && 
-                    t.status === 'lunas' &&
-                    t.jenis === 'masuk' &&
-                    (!t.kategori || t.kategori === 'iuran-rutin')
+                    t.warga_id === w.id && t.tahun_iuran == y && t.bulan_iuran == m && 
+                    t.status === 'lunas' && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin')
                 );
-                
                 if (!sudahBayar) {
                     bulanBelumBayar++;
-                    // Format tulisan: "Jan 25", "Feb 26" agar tidak terlalu panjang
                     detailBulanTunggak.push(`${this.namaBulanSingkat[m]} ${y.toString().slice(-2)}`);
                 }
             }
@@ -797,7 +800,6 @@ const app = {
 
         const totalTunggakan = bulanBelumBayar * (w.iuran_bulanan || 0);
         
-        // Format teks tunggakan
         let teksTunggakan = `<span style="color: var(--success);">Tidak ada (Lunas)</span>`;
         if (bulanBelumBayar > 0) {
             teksTunggakan = `${this.formatRp(totalTunggakan)} <br><span style="font-size: 11px; font-weight: normal; color: var(--gray);">(${detailBulanTunggak.join(', ')})</span>`;
@@ -815,9 +817,6 @@ const app = {
         `;
 
         document.getElementById('edit-warga-id').value = w.id; 
-        
-        const btnHapus = document.getElementById('btn-hapus-warga');
-        if (btnHapus) btnHapus.onclick = () => this.deleteWarga(w.id);
         
         const btnEditHeader = document.getElementById('btn-edit-warga-header');
         if (btnEditHeader) btnEditHeader.onclick = () => {
@@ -841,7 +840,7 @@ const app = {
             this.transaksi = this.transaksi.filter(t => t.warga_id !== id);
             this.saveLocal();
             
-            this.closeModal('modal-detail-warga');
+            this.closeModal('modal-warga'); // <-- Menutup form edit
             this.renderDashboard();
             this.renderListWarga();
             this.updateWargaDropdown();
