@@ -186,12 +186,14 @@
             </div>
             <form id="form-transaksi" onsubmit="app.saveTransaksi(event)">
                 <input type="hidden" id="edit-id">
+                
                 <div class="form-group">
                     <label class="form-label">Warga</label>
                     <select id="warga-id" class="form-select" required onchange="app.autoFillWarga()">
                         <option value="">Pilih Warga</option>
                     </select>
                 </div>
+                
                 <div class="input-row">
                     <div class="form-group">
                         <label class="form-label">No. Rumah</label>
@@ -202,20 +204,38 @@
                         <input type="number" id="nominal" class="form-input" required min="0">
                     </div>
                 </div>
+                
                 <div class="form-group">
-                    <label class="form-label">Tanggal</label>
+                    <label class="form-label">Tanggal Bayar</label>
                     <input type="date" id="tanggal" class="form-input" required>
                 </div>
+                
+                <!-- DROPDOWN BULAN & TAHUN -->
                 <div class="input-row">
                     <div class="form-group">
-                        <label class="form-label">Bulan</label>
-                        <input type="number" id="bulan-iuran" class="form-input" min="1" max="12" placeholder="1-12">
+                        <label class="form-label">Bulan Iuran <span style="color: var(--danger);">*</span></label>
+                        <select id="bulan-iuran" class="form-select" required>
+                            <option value="">Pilih Bulan</option>
+                            <option value="1">Januari</option>
+                            <option value="2">Februari</option>
+                            <option value="3">Maret</option>
+                            <option value="4">April</option>
+                            <option value="5">Mei</option>
+                            <option value="6">Juni</option>
+                            <option value="7">Juli</option>
+                            <option value="8">Agustus</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Tahun</label>
-                        <input type="number" id="tahun-iuran" class="form-input" min="2000" max="2100">
+                        <label class="form-label">Tahun Iuran <span style="color: var(--danger);">*</span></label>
+                        <select id="tahun-iuran" class="form-select" required></select>
                     </div>
                 </div>
+                
                 <div class="form-group">
                     <label class="form-label">Status</label>
                     <select id="status-bayar" class="form-select">
@@ -224,10 +244,12 @@
                         <option value="nunggak">⚠️ Nunggak</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
                     <label class="form-label">Catatan</label>
                     <input type="text" id="catatan" class="form-input" placeholder="Opsional">
                 </div>
+                
                 <button type="submit" class="btn btn-primary" id="btn-save-trans">
                     💾 Simpan ke Cloud
                 </button>
@@ -244,10 +266,12 @@
             </div>
             <form id="form-warga" onsubmit="app.saveWarga(event)">
                 <input type="hidden" id="edit-warga-id">
+                
                 <div class="form-group">
                     <label class="form-label">Nama Lengkap</label>
                     <input type="text" id="warga-nama" class="form-input" required>
                 </div>
+                
                 <div class="input-row">
                     <div class="form-group">
                         <label class="form-label">No. Rumah</label>
@@ -258,10 +282,12 @@
                         <input type="number" id="warga-iuran" class="form-input" required min="0" value="50000">
                     </div>
                 </div>
+                
                 <div class="form-group">
                     <label class="form-label">No. HP</label>
                     <input type="tel" id="warga-hp" class="form-input" placeholder="0812...">
                 </div>
+                
                 <div class="form-group">
                     <label class="form-label">Status</label>
                     <select id="warga-status" class="form-select">
@@ -270,6 +296,7 @@
                         <option value="sewa">🟡 Penyewa</option>
                     </select>
                 </div>
+                
                 <button type="submit" class="btn btn-primary">💾 Simpan ke Cloud</button>
             </form>
         </div>
