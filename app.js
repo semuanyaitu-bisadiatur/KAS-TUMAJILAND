@@ -203,13 +203,12 @@ const app = {
 
         // Panggil fungsi render sesuai halaman yang dibuka
         if (page === 'home') {
-            this.renderDashboard();
+            this.renderDashboard(); 
+            // renderDashboard otomatis akan memanggil renderRekapTahunan()
         } else if (page === 'warga') {
             this.renderListWarga();
         } else if (page === 'transaksi') {
-            this.prepareRekapTahun(); // Siapkan pilihan tahun untuk rekap
-            this.renderRekapTahunan(); // Jalankan rekap tabel
-            this.renderListTransaksi(); // Render daftar riwayat transaksi di bawahnya
+            this.renderListTransaksi();
         }
 
         document.getElementById('main-content').scrollTop = 0;
@@ -323,46 +322,10 @@ const app = {
         if (dashAktif) dashAktif.textContent = wargaAktif.length;
         if (dashTunggak) dashTunggak.textContent = this.transaksi.filter(t => t.status === 'nunggak').length;
 
-        // Recent transactions
-        const recent = [...this.transaksi].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 5);
-        const container = document.getElementById('dash-transaksi');
-
-        if (!container) return;
-
-        if (recent.length === 0) {
-            container.innerHTML = `
-                <div class="empty">
-                    <div class="empty-icon">📭</div>
-                    <p>Belum ada transaksi</p>
-                </div>`;
-            return;
-        }
-
-        container.innerHTML = recent.map(t => `
-            <div class="list-item" onclick="app.showDetailTransaksi('${t.id}')"> 
-                <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
-                    ${t.jenis === 'masuk' ? '💰' : '💸'}
-                </div>
-                <div class="list-content">
-                    <div class="list-title">${t.atas_nama || t.no_rumah || '-'}</div>
-                    <div class="list-subtitle">
-                        ${new Date(t.tanggal).toLocaleDateString('id-ID')} • 
-                        ${t.bulan_iuran ? this.namaBulanSingkat[t.bulan_iuran] : ''} ${t.tahun_iuran || ''} • 
-                        ${t.status}
-                    </div>
-                </div>
-                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                    <div class="list-amount ${t.jenis === 'masuk' ? 'income' : 'expense'}">
-                        ${t.jenis === 'masuk' ? '+' : '-'}${this.formatRp(t.nominal)}
-                    </div>
-                    <button onclick="app.editTransaksi('${t.id}')" style="border: 1px solid #e2e8f0; background: #f7fafc; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: var(--gray); cursor: pointer;">
-                        ✏️ Edit
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        // --- Panggil Matriks Rekap Iuran di Dashboard ---
+        this.prepareRekapTahun();
+        this.renderRekapTahunan();
     },
-
     // ===== RENDER LIST TRANSAKSI =====
     renderListTransaksi() {
         const container = document.getElementById('list-transaksi');
