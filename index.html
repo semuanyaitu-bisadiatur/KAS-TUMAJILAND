@@ -63,16 +63,20 @@
             </div>
 
             <div class="card">
-                <div class="card-title">📋 Transaksi Terbaru</div>
-                <div id="dash-transaksi">
-                    <div class="empty">
-                        <div class="empty-icon">📭</div>
-                        <p>Belum ada transaksi</p>
-                    </div>
+                <div class="card-title">🗓️ Rekap Iuran Seluruh Warga</div>
+                <div class="form-group">
+                    <select id="rekap-tahun-select" class="form-select" onchange="app.renderRekapTahunan()"></select>
                 </div>
-                <button class="btn btn-outline" onclick="app.navigateTo('transaksi')" style="margin-top: 12px;">
-                    Lihat Semua →
-                </button>
+                <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <table id="table-rekap" style="width: 100%; border-collapse: collapse; font-size: 10px; min-width: 600px;">
+                        <thead id="thead-rekap"></thead>
+                        <tbody id="tbody-rekap"></tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 10px; font-size: 10px;">
+                    <span>✅ Lunas</span>
+                    <span>❌ Belum</span>
+                </div>
             </div>
 
             <div class="card">
@@ -96,7 +100,7 @@
 
         <div class="page" id="page-transaksi">
             
-            <div class="btn-group" style="margin-bottom: 16px;">
+            <div class="btn-group" id="btn-group-transaksi" style="margin-bottom: 16px; display: none;">
                 <button class="btn btn-primary" onclick="app.openModal('modal-input')">
                     ➕ Iuran
                 </button>
@@ -106,23 +110,6 @@
                 <button class="btn btn-danger" onclick="app.openModal('modal-pengeluaran')">
                     ➖ Pengeluaran
                 </button>
-            </div>
-
-            <div class="card">
-                <div class="card-title">🗓️ Rekap Iuran Seluruh Warga</div>
-                <div class="form-group">
-                    <select id="rekap-tahun-select" class="form-select" onchange="app.renderRekapTahunan()"></select>
-                </div>
-                <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    <table id="table-rekap" style="width: 100%; border-collapse: collapse; font-size: 10px; min-width: 600px;">
-                        <thead id="thead-rekap"></thead>
-                        <tbody id="tbody-rekap"></tbody>
-                    </table>
-                </div>
-                <div style="margin-top: 10px; display: flex; gap: 10px; font-size: 10px;">
-                    <span>✅ Lunas</span>
-                    <span>❌ Belum</span>
-                </div>
             </div>
 
             <div class="card">
