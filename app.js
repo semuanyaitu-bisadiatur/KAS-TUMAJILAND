@@ -700,6 +700,10 @@ const app = {
         document.getElementById('warga-hp').value = w.hp || '';
         document.getElementById('warga-iuran').value = w.iuran_bulanan || 0;
         document.getElementById('warga-status').value = w.status;
+        
+        // TAMBAHKAN BARIS INI: Tampilkan tombol checklist jika data sudah ada
+        document.getElementById('btn-lihat-kartu').style.display = 'block';
+        
         this.openModal('modal-warga');
     },
 
@@ -759,7 +763,105 @@ const app = {
             </div>
         `;
     },
+  // ===== CHECKLIST KARTU IURAN =====
+    bukaKartuIuran() {
+        const wId = document.getElementById('edit-warga-id').value;
+        if (!wId) {
+            alert('Simpan data warga terlebih dahulu!');
+            return;
+        }
+        
+        // Tutup modal warga, buka modal kartu
+        this.closeModal('modal-warga');
+        document.getElementById('kartu-warga-id').value = wId;
 
+        // Isi dropdown tahun (2 tahun ke belakang, 2 ke depan)
+        const sel = document.getElementById('kartu-tahun');
+        sel.innerHTML = '';
+        const yr = new Date().getFullYear();
+        for(let i = yr - 2; i <= yr + 2; i++) {
+            sel.innerHTML += `<option value="${i}" ${i === yr ? 'selected' : ''}>Tahun ${i}</option>`;
+        }
+
+        this.renderKartuIuran();
+        this.openModal('modal-kartu-iuran');
+    },
+
+    renderKartuIuran() {
+        const wId = document.getElementById('kartu-warga-id').value;
+        const tahun = document.getElementById('kartu-tahun').value;
+        const grid = document.getElementById('grid-kartu-iuran');
+        grid.innerHTML = '';
+
+        // Cari transaksi khusus Iuran, lunas, untuk warga ini di tahun terpilih
+        const trx = this.transaksi.filter(t => t.warga_id === wId && t.tahun_iuran == tahun && t.status === 'lunas' && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin'));
+
+        for(let i = 1; i <= 12; i++) {
+            const sudahBayar = trx.find(t => t.bulan_iuran == i);
+            const bg = sudahBayar ? '#c6f6d5' : '#fff5f5'; 
+            const border = sudahBayar ? '#38a169' : '#fc8181';
+            const icon = sudahBayar ? '✅' : '❌';
+
+            grid.innerHTML += `
+                <div style="background: ${bg}; border: 1px solid ${border}; padding: 12px 4px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s;"
+                     onclick="app.toggleIuran('${wId}', ${tahun}, ${i})">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--dark);">${this.namaBulanSingkat[i]}</div>
+                    <div style="font-size: 18px; margin-top: 6px;">${icon}</div>
+                </div>
+            `;
+        }
+    },
+
+    async toggleIuran(wId, tahun, bulan) {
+        const warga = this.warga.find(w => w.id === wId);
+        // Cek apakah sudah ada transaksi iuran di bulan ini
+        const trxIndex = this.transaksi.findIndex(t => t.warga_id === wId && t.tahun_iuran == tahun && t.bulan_iuran == bulan && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin'));
+
+        if (trxIndex >= 0) {
+            // JIKA SUDAH LUNAS -> BATALKAN (Hapus Transaksi)
+            if(confirm(`Batalkan pembayaran ${this.namaBulan[bulan]} ${tahun}?`)) {
+                const tId = this.transaksi[trxIndex].id;
+                this.transaksi.splice(trxIndex, 1);
+                
+                if (this.isConnected && this.supabase) {
+                    await this.supabase.from('transaksi').delete().eq('id', tId);
+                } else {
+                    this.saveLocal();
+                }
+            }
+        } else {
+            // JIKA BELUM BAYAR -> TANDAI LUNAS (Buat Transaksi)
+            if(confirm(`Tandai LUNAS iuran ${this.namaBulan[bulan]} ${tahun}?`)) {
+                const data = {
+                    id: 'TRX-CHK-' + Date.now(),
+                    tanggal: new Date().toISOString().split('T')[0], // Tanggal hari ini
+                    jenis: 'masuk',
+                    kategori: 'iuran-rutin',
+                    warga_id: wId,
+                    no_rumah: warga.no_rumah,
+                    atas_nama: warga.nama,
+                    nominal: warga.iuran_bulanan || 0,
+                    auto_nominal: true,
+                    status: 'lunas',
+                    bulan_iuran: bulan.toString(),
+                    tahun_iuran: tahun.toString(),
+                    catatan: 'Dari sistem checklist'
+                };
+                this.transaksi.unshift(data);
+                
+                if (this.isConnected && this.supabase) {
+                    await this.supabase.from('transaksi').insert([data]);
+                } else {
+                    this.saveLocal();
+                }
+            }
+        }
+        
+        // Render ulang tampilan agar langsung update
+        this.renderKartuIuran();
+        this.renderDashboard();
+        this.renderListTransaksi();
+    },
     // ===== EXPORT/IMPORT =====
     exportAllCSV() {
         let csv = 'Data Warga\nID,Nama,No Rumah,HP,Status,Iuran\n';
