@@ -318,6 +318,10 @@
                     </select>
                 </div>
                 
+                <button type="button" class="btn btn-outline" id="btn-lihat-kartu" onclick="app.bukaKartuIuran()" style="margin-bottom: 10px; display: none;">
+                    📅 Lihat Checklist Iuran
+                </button>
+                
                 <button type="submit" class="btn btn-primary">💾 Simpan ke Cloud</button>
             </form>
         </div>
@@ -380,6 +384,26 @@
                     💾 Simpan ke Cloud
                 </button>
             </form>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-kartu-iuran">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title">📅 Checklist Iuran</div>
+                <button class="modal-close" onclick="app.closeModal('modal-kartu-iuran')">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tahun</label>
+                <select id="kartu-tahun" class="form-select" onchange="app.renderKartuIuran()"></select>
+            </div>
+            <input type="hidden" id="kartu-warga-id">
+            
+            <p style="font-size: 12px; color: var(--gray); text-align: center; margin-bottom: 16px;">
+                💡 <i>Klik pada bulan untuk menandai Lunas / Batal.</i>
+            </p>
+            
+            <div id="grid-kartu-iuran" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
+            </div>
         </div>
     </div>
     <script src="app.js"></script>
