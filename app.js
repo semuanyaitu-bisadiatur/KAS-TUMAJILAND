@@ -339,8 +339,7 @@ const app = {
         }
 
         container.innerHTML = recent.map(t => `
-            <div class="list-item" onclick="app.editTransaksi('${t.id}')">
-                <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
+            <div class="list-item"> <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
                     ${t.jenis === 'masuk' ? '💰' : '💸'}
                 </div>
                 <div class="list-content">
@@ -351,8 +350,13 @@ const app = {
                         ${t.status}
                     </div>
                 </div>
-                <div class="list-amount ${t.jenis === 'masuk' ? 'income' : 'expense'}">
-                    ${t.jenis === 'masuk' ? '+' : '-'}${this.formatRp(t.nominal)}
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                    <div class="list-amount ${t.jenis === 'masuk' ? 'income' : 'expense'}">
+                        ${t.jenis === 'masuk' ? '+' : '-'}${this.formatRp(t.nominal)}
+                    </div>
+                    <button onclick="app.editTransaksi('${t.id}')" style="border: 1px solid #e2e8f0; background: #f7fafc; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: var(--gray); cursor: pointer;">
+                        ✏️ Edit
+                    </button>
                 </div>
             </div>
         `).join('');
@@ -386,8 +390,7 @@ const app = {
         }
 
         container.innerHTML = sorted.map(t => `
-            <div class="list-item" onclick="app.editTransaksi('${t.id}')">
-                <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
+            <div class="list-item"> <div class="list-icon ${t.jenis === 'masuk' ? 'green' : 'red'}">
                     ${t.jenis === 'masuk' ? '💰' : '💸'}
                 </div>
                 <div class="list-content">
@@ -398,13 +401,19 @@ const app = {
                         ${new Date(t.tanggal).toLocaleDateString('id-ID')}
                     </div>
                 </div>
-                <div style="text-align: right;">
+                
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                     <div class="list-amount ${t.jenis === 'masuk' ? 'income' : 'expense'}">
                         ${this.formatRp(t.nominal)}
                     </div>
-                    <span class="badge badge-${t.status === 'lunas' ? 'green' : t.status === 'nunggak' ? 'yellow' : 'red'}">
-                        ${t.status}
-                    </span>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <span class="badge badge-${t.status === 'lunas' ? 'green' : t.status === 'nunggak' ? 'yellow' : 'red'}">
+                            ${t.status}
+                        </span>
+                        <button onclick="app.editTransaksi('${t.id}')" style="border: 1px solid #e2e8f0; background: #f7fafc; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: var(--gray); cursor: pointer;">
+                            ✏️ Edit
+                        </button>
+                    </div>
                 </div>
             </div>
         `).join('');
