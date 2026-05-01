@@ -326,22 +326,20 @@ const app = {
         this.prepareRekapTahun();
         this.renderRekapTahunan();
     },
+
     // ===== RENDER LIST TRANSAKSI =====
     renderListTransaksi() {
         const container = document.getElementById('list-transaksi');
-        const filterEl = document.getElementById('filter-transaksi'); // Ambil elemen filter
+        const filterEl = document.getElementById('filter-transaksi'); 
         if (!container) return;
         
-        // Cek nilai filter saat ini (jika tidak ada, default ke 'semua')
         const filterVal = filterEl ? filterEl.value : 'semua';
         
-        // Saring data berdasarkan filter yang dipilih
         let filteredTrx = [...this.transaksi];
         if (filterVal !== 'semua') {
             filteredTrx = filteredTrx.filter(t => t.jenis === filterVal);
         }
 
-        // Urutkan dari yang paling baru
         const sorted = filteredTrx.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
 
         if (sorted.length === 0) {
@@ -375,9 +373,6 @@ const app = {
                         <span class="badge badge-${t.status === 'lunas' ? 'green' : t.status === 'nunggak' ? 'yellow' : 'red'}">
                             ${t.status}
                         </span>
-                        <button onclick="app.editTransaksi('${t.id}')" style="border: 1px solid #e2e8f0; background: #f7fafc; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: var(--gray); cursor: pointer;">
-                            ✏️ Edit
-                        </button>
                     </div>
                 </div>
             </div>
@@ -404,7 +399,7 @@ const app = {
             const tunggakan = this.transaksi.filter(t => t.warga_id === w.id && t.status === 'nunggak')
                                            .reduce((s,t) => s + t.nominal, 0);
             return `
-            return `<div class="list-item" onclick="app.showDetailWarga('${w.id}')">`
+            <div class="list-item" onclick="app.showDetailWarga('${w.id}')">
                 <div class="list-icon ${w.status === 'aktif' ? 'blue' : w.status === 'pindah' ? 'red' : 'yellow'}">
                     🏠
                 </div>
@@ -499,7 +494,7 @@ const app = {
             kategori: 'pengeluaran-umum',
             warga_id: null,
             no_rumah: '',
-            atas_nama: keterangan, // Disimpan sebagai judul agar muncul rapi di list transaksi
+            atas_nama: keterangan, 
             nominal: parseFloat(document.getElementById('nominal-pengeluaran').value) || 0,
             auto_nominal: false,
             status: 'lunas',
@@ -558,7 +553,7 @@ const app = {
             kategori: 'pemasukan-lain',
             warga_id: null,
             no_rumah: '',
-            atas_nama: keterangan, // Menyimpan sumber uang di atas nama agar terbaca rapi di list
+            atas_nama: keterangan,
             nominal: parseFloat(document.getElementById('nominal-pemasukan-lain').value) || 0,
             auto_nominal: false,
             status: 'lunas',
@@ -646,7 +641,7 @@ const app = {
         }
     },
 
-    // ===== EDIT =====
+    // ===== EDIT & DETAIL TRANSAKSI =====
     editTransaksi(id) {
         const t = this.transaksi.find(x => x.id === id);
         if (!t) return;
@@ -685,7 +680,7 @@ const app = {
             this.openModal('modal-input');
         }
     },
-  // ===== TAMPILKAN DETAIL TRANSAKSI =====
+
     showDetailTransaksi(id) {
         const t = this.transaksi.find(x => x.id === id);
         if (!t) return;
@@ -693,7 +688,6 @@ const app = {
         const container = document.getElementById('content-detail-transaksi');
         const isMasuk = t.jenis === 'masuk';
         
-        // Membangun tampilan isi detail
         container.innerHTML = `
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 40px;">${isMasuk ? '💰' : '💸'}</div>
@@ -714,7 +708,6 @@ const app = {
             </div>
         `;
 
-        // Atur tombol edit agar mengarah ke fungsi edit yang sudah ada
         const btnEdit = document.getElementById('btn-lanjut-edit');
         if (btnEdit) {
             btnEdit.onclick = () => {
@@ -725,7 +718,8 @@ const app = {
 
         this.openModal('modal-detail-transaksi');
     },
-    
+
+    // ===== EDIT & DETAIL WARGA =====
     editWarga(id) {
         const w = this.warga.find(x => x.id === id);
         if (!w) return;
@@ -736,11 +730,63 @@ const app = {
         document.getElementById('warga-iuran').value = w.iuran_bulanan || 0;
         document.getElementById('warga-status').value = w.status;
         
-        // Tampilkan tombol checklist jika data sudah ada
-        const btnKartu = document.getElementById('btn-lihat-kartu');
-        if(btnKartu) btnKartu.style.display = 'block';
-        
         this.openModal('modal-warga');
+    },
+
+    showDetailWarga(id) {
+        const w = this.warga.find(x => x.id === id);
+        if (!w) return;
+
+        const container = document.getElementById('content-detail-warga');
+        const tunggakan = this.transaksi.filter(t => t.warga_id === w.id && t.status === 'nunggak')
+                                       .reduce((s, t) => s + t.nominal, 0);
+
+        container.innerHTML = `
+            <div style="display: grid; grid-template-columns: 110px 1fr; gap: 8px;">
+                <div style="color: var(--gray);">Nama Lengkap</div><div style="font-weight: 700;">: ${w.nama}</div>
+                <div style="color: var(--gray);">No. Rumah</div><div>: ${w.no_rumah}</div>
+                <div style="color: var(--gray);">Iuran Bulanan</div><div>: ${this.formatRp(w.iuran_bulanan)}</div>
+                <div style="color: var(--gray);">No. HP</div><div>: ${w.hp || '-'}</div>
+                <div style="color: var(--gray);">Status</div><div>: ${w.status.toUpperCase()}</div>
+                <div style="color: var(--gray);">Tunggakan</div><div style="color: var(--danger); font-weight: bold;">: ${this.formatRp(tunggakan)}</div>
+            </div>
+        `;
+
+        document.getElementById('edit-warga-id').value = w.id; 
+        
+        const btnHapus = document.getElementById('btn-hapus-warga');
+        if (btnHapus) btnHapus.onclick = () => this.deleteWarga(w.id);
+        
+        const btnEditHeader = document.getElementById('btn-edit-warga-header');
+        if (btnEditHeader) btnEditHeader.onclick = () => {
+            this.closeModal('modal-detail-warga');
+            this.editWarga(w.id);
+        };
+
+        this.openModal('modal-detail-warga');
+    },
+
+    async deleteWarga(id) {
+        if (!confirm('Hapus warga ini? Seluruh riwayat transaksi terkait juga akan dihapus.')) return;
+        
+        try {
+            if (this.isConnected && this.supabase) {
+                await this.supabase.from('warga').delete().eq('id', id);
+                await this.supabase.from('transaksi').delete().eq('warga_id', id);
+            }
+            
+            this.warga = this.warga.filter(w => w.id !== id);
+            this.transaksi = this.transaksi.filter(t => t.warga_id !== id);
+            this.saveLocal();
+            
+            this.closeModal('modal-detail-warga');
+            this.renderDashboard();
+            this.renderListWarga();
+            this.updateWargaDropdown();
+            alert('Data warga berhasil dihapus.');
+        } catch(err) {
+            alert('Gagal menghapus: ' + err.message);
+        }
     },
 
     // ===== LAPORAN =====
@@ -804,12 +850,12 @@ const app = {
     bukaKartuIuran() {
         const wId = document.getElementById('edit-warga-id').value;
         if (!wId) {
-            alert('Simpan data warga terlebih dahulu!');
+            alert('Warga tidak ditemukan!');
             return;
         }
         
-        // Tutup modal warga, buka modal kartu
-        this.closeModal('modal-warga');
+        // Tutup modal detail warga, buka modal kartu
+        this.closeModal('modal-detail-warga');
         document.getElementById('kartu-warga-id').value = wId;
 
         // Isi dropdown tahun (2 tahun ke belakang, 2 ke depan)
@@ -830,7 +876,6 @@ const app = {
         const grid = document.getElementById('grid-kartu-iuran');
         grid.innerHTML = '';
 
-        // Cari transaksi khusus Iuran, lunas, untuk warga ini di tahun terpilih
         const trx = this.transaksi.filter(t => t.warga_id === wId && t.tahun_iuran == tahun && t.status === 'lunas' && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin'));
 
         for(let i = 1; i <= 12; i++) {
@@ -851,11 +896,9 @@ const app = {
 
     async toggleIuran(wId, tahun, bulan) {
         const warga = this.warga.find(w => w.id === wId);
-        // Cek apakah sudah ada transaksi iuran di bulan ini
         const trxIndex = this.transaksi.findIndex(t => t.warga_id === wId && t.tahun_iuran == tahun && t.bulan_iuran == bulan && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin'));
 
         if (trxIndex >= 0) {
-            // JIKA SUDAH LUNAS -> BATALKAN (Hapus Transaksi)
             if(confirm(`Batalkan pembayaran ${this.namaBulan[bulan]} ${tahun}?`)) {
                 const tId = this.transaksi[trxIndex].id;
                 this.transaksi.splice(trxIndex, 1);
@@ -867,11 +910,10 @@ const app = {
                 }
             }
         } else {
-            // JIKA BELUM BAYAR -> TANDAI LUNAS (Buat Transaksi)
             if(confirm(`Tandai LUNAS iuran ${this.namaBulan[bulan]} ${tahun}?`)) {
                 const data = {
                     id: 'TRX-CHK-' + Date.now(),
-                    tanggal: new Date().toISOString().split('T')[0], // Tanggal hari ini
+                    tanggal: new Date().toISOString().split('T')[0], 
                     jenis: 'masuk',
                     kategori: 'iuran-rutin',
                     warga_id: wId,
@@ -894,7 +936,6 @@ const app = {
             }
         }
         
-        // Render ulang tampilan agar langsung update
         this.renderKartuIuran();
         this.renderDashboard();
         this.renderListTransaksi();
@@ -917,7 +958,6 @@ const app = {
         const tbody = document.getElementById('tbody-rekap');
         if (!thead || !tbody) return;
 
-        // Render Header (Bulan)
         let headerHtml = `<tr><th>Warga</th>`;
         for (let i = 1; i <= 12; i++) {
             headerHtml += `<th>${this.namaBulanSingkat[i]}</th>`;
@@ -925,7 +965,6 @@ const app = {
         headerHtml += `</tr>`;
         thead.innerHTML = headerHtml;
 
-        // --- BAGIAN YANG DIUBAH (NATURAL SORT) ---
         const wargaAktif = this.warga.filter(w => w.status === 'aktif').sort((a, b) => 
             a.no_rumah.localeCompare(b.no_rumah, undefined, { numeric: true, sensitivity: 'base' })
         );
@@ -963,27 +1002,24 @@ const app = {
         a.download = `Backup_Kas_${new Date().toISOString().slice(0,10)}.csv`;
         a.click();
     },
+
     // ===== EXPORT REKAP TAHUNAN (MATRIKS) =====
     exportRekapTahunanCSV() {
         const tahun = document.getElementById('rekap-tahun-select').value;
         let csv = `REKAP IURAN WARGA TAHUN ${tahun}\n\n`;
         
-        // Membuat Header Kolom (No. Rumah, Nama, Jan, Feb, ... Des)
         const headers = ['No. Rumah', 'Nama'];
         for (let i = 1; i <= 12; i++) {
             headers.push(this.namaBulan[i]);
         }
-        csv += headers.join(';') + '\n'; // Menggunakan titik koma agar rapi di Excel
+        csv += headers.join(';') + '\n'; 
         
-        // Mengambil data warga aktif
         const wargaAktif = this.warga.filter(w => w.status === 'aktif')
-                                     .sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
+                                     .sort((a,b) => a.no_rumah.localeCompare(b.no_rumah, undefined, {numeric: true}));
         
-        // Mengisi data per baris
         wargaAktif.forEach(w => {
             let row = [w.no_rumah, w.nama];
             
-            // --- AWAL BLOK FOR ---
             for (let bulan = 1; bulan <= 12; bulan++) {
                 const lunas = this.transaksi.find(t => 
                     t.warga_id === w.id && 
@@ -992,15 +1028,12 @@ const app = {
                     t.status === 'lunas'
                 );
                 
-                // Pastikan push ini ada di dalam blok for
                 row.push(lunas ? 'LUNAS' : '-');
             } 
-            // --- AKHIR BLOK FOR ---
             
             csv += row.join(';') + '\n';
         });
 
-        // Proses Download File
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -1013,14 +1046,12 @@ const app = {
         document.body.removeChild(link);
     },
     
- // ===== EXPORT PENGELUARAN =====
+    // ===== EXPORT PENGELUARAN =====
     exportPengeluaranCSV() {
         let csv = 'LAPORAN DATA PENGELUARAN\n\n';
         
-        // Membuat Header
         csv += 'Tanggal;Keterangan / Keperluan;Nominal (Rp)\n';
         
-        // Ambil data yang hanya jenisnya "keluar", urutkan dari yang paling lama ke terbaru
         const pengeluaran = this.transaksi
             .filter(t => t.jenis === 'keluar')
             .sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
@@ -1032,9 +1063,7 @@ const app = {
 
         let totalPengeluaran = 0;
 
-        // Masukkan data ke baris-baris CSV
         pengeluaran.forEach(t => {
-            // Ubah format tanggal agar lebih enak dibaca di Excel (contoh: 2026-05-20)
             const tgl = new Date(t.tanggal).toLocaleDateString('id-ID'); 
             const keterangan = t.atas_nama || t.catatan || '-';
             const nominal = t.nominal;
@@ -1043,10 +1072,8 @@ const app = {
             totalPengeluaran += nominal;
         });
 
-        // Tambahkan baris Total di paling bawah
         csv += `\n;TOTAL PENGELUARAN;${totalPengeluaran}\n`;
 
-        // Proses Download File
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -1058,7 +1085,7 @@ const app = {
         link.click();
         document.body.removeChild(link);
     },
-    
+
     importCSV(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1085,59 +1112,6 @@ const app = {
         alert('✅ Semua data dihapus');
     }
 };
-// ===== DETAIL WARGA =====
-    showDetailWarga(id) {
-        const w = this.warga.find(x => x.id === id);
-        if (!w) return;
-
-        const container = document.getElementById('content-detail-warga');
-        const tunggakan = this.transaksi.filter(t => t.warga_id === w.id && t.status === 'nunggak')
-                                       .reduce((s, t) => s + t.nominal, 0);
-
-        container.innerHTML = `
-            <div style="display: grid; grid-template-columns: 110px 1fr; gap: 8px;">
-                <div style="color: var(--gray);">Nama Lengkap</div><div style="font-weight: 700;">: ${w.nama}</div>
-                <div style="color: var(--gray);">No. Rumah</div><div>: ${w.no_rumah}</div>
-                <div style="color: var(--gray);">Iuran Bulanan</div><div>: ${this.formatRp(w.iuran_bulanan)}</div>
-                <div style="color: var(--gray);">No. HP</div><div>: ${w.hp || '-'}</div>
-                <div style="color: var(--gray);">Status</div><div>: ${w.status.toUpperCase()}</div>
-                <div style="color: var(--gray);">Tunggakan</div><div style="color: var(--danger); font-weight: bold;">: ${this.formatRp(tunggakan)}</div>
-            </div>
-        `;
-
-        // Set ID untuk tombol Hapus dan Edit
-        document.getElementById('edit-warga-id').value = w.id; 
-        document.getElementById('btn-hapus-warga').onclick = () => this.deleteWarga(w.id);
-        document.getElementById('btn-edit-warga-header').onclick = () => {
-            this.closeModal('modal-detail-warga');
-            this.editWarga(w.id);
-        };
-
-        this.openModal('modal-detail-warga');
-    },
-
-    async deleteWarga(id) {
-        if (!confirm('Hapus warga ini? Seluruh riwayat transaksi terkait juga akan dihapus.')) return;
-        
-        try {
-            if (this.isConnected && this.supabase) {
-                await this.supabase.from('warga').delete().eq('id', id);
-                await this.supabase.from('transaksi').delete().eq('warga_id', id);
-            }
-            
-            this.warga = this.warga.filter(w => w.id !== id);
-            this.transaksi = this.transaksi.filter(t => t.warga_id !== id);
-            this.saveLocal();
-            
-            this.closeModal('modal-detail-warga');
-            this.renderDashboard();
-            this.renderListWarga();
-            this.updateWargaDropdown();
-            alert('Data warga berhasil dihapus.');
-        } catch(err) {
-            alert('Gagal menghapus: ' + err.message);
-        }
-    },
 
 // ===== START APP =====
 document.addEventListener('DOMContentLoaded', () => app.init());
