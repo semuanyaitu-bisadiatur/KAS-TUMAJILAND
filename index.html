@@ -63,7 +63,12 @@
             </div>
 
             <div class="card">
-                <div class="card-title">🗓️ Rekap Iuran Seluruh Warga</div>
+                <div class="card-title" style="justify-content: space-between;">
+                    <span>🗓️ Rekap Iuran Seluruh Warga</span>
+                        <button class="btn btn-sm btn-outline" onclick="app.exportRekapTahunanCSV()" style="width: auto; padding: 4px 12px;">
+                           📥 Export CSV
+                            </button>
+                        </div>
                 <div class="form-group">
                     <select id="rekap-tahun-select" class="form-select" onchange="app.renderRekapTahunan()"></select>
                 </div>
