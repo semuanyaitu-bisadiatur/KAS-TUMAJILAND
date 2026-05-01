@@ -216,15 +216,20 @@ const app = {
             const now = new Date();
             document.getElementById('bulan-iuran').value = now.getMonth() + 1;
             this.generateTahunOptions();
+        } else if (id === 'modal-pengeluaran') {
+            document.getElementById('tgl-pengeluaran').valueAsDate = new Date();
         }
     },
 
     closeModal(id) {
         document.getElementById(id).classList.remove('active');
-        document.getElementById('form-transaksi').reset();
-        document.getElementById('form-warga').reset();
+        if (id === 'modal-input') document.getElementById('form-transaksi').reset();
+        if (id === 'modal-warga') document.getElementById('form-warga').reset();
+        if (id === 'modal-pengeluaran') document.getElementById('form-pengeluaran').reset();
+        
         document.getElementById('edit-id').value = '';
         document.getElementById('edit-warga-id').value = '';
+        document.getElementById('edit-pengeluaran-id').value = '';
         
         const now = new Date();
         document.getElementById('bulan-iuran').value = now.getMonth() + 1;
@@ -481,7 +486,64 @@ const app = {
             btn.textContent = '💾 Simpan ke Cloud';
         }
     },
+// ===== SAVE PENGELUARAN =====
+    async savePengeluaran(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-pengeluaran');
+        btn.disabled = true;
+        btn.textContent = '⏳...';
 
+        const keterangan = document.getElementById('keterangan-pengeluaran').value;
+
+        const data = {
+            id: document.getElementById('edit-pengeluaran-id').value || 'TRX-OUT-' + Date.now(),
+            tanggal: document.getElementById('tgl-pengeluaran').value,
+            jenis: 'keluar',
+            kategori: 'pengeluaran-umum',
+            warga_id: null,
+            no_rumah: '',
+            atas_nama: keterangan, // Disimpan sebagai judul agar muncul rapi di list transaksi
+            nominal: parseFloat(document.getElementById('nominal-pengeluaran').value) || 0,
+            auto_nominal: false,
+            status: 'lunas',
+            bulan_iuran: null,
+            tahun_iuran: null,
+            catatan: keterangan
+        };
+
+        try {
+            if (this.isConnected && this.supabase) {
+                const existing = document.getElementById('edit-pengeluaran-id').value;
+                if (existing) {
+                    await this.supabase.from('transaksi').update(data).eq('id', existing);
+                    const idx = this.transaksi.findIndex(t => t.id === existing);
+                    if (idx >= 0) this.transaksi[idx] = data;
+                } else {
+                    await this.supabase.from('transaksi').insert([data]);
+                    this.transaksi.unshift(data);
+                }
+            } else {
+                const existing = document.getElementById('edit-pengeluaran-id').value;
+                if (existing) {
+                    const idx = this.transaksi.findIndex(t => t.id === existing);
+                    if (idx >= 0) this.transaksi[idx] = data;
+                } else {
+                    this.transaksi.unshift(data);
+                }
+                this.saveLocal();
+            }
+
+            this.closeModal('modal-pengeluaran');
+            this.renderDashboard();
+            this.renderListTransaksi();
+            this.updateStatus('online', '✓ Pengeluaran Tersimpan');
+        } catch(err) {
+            alert('Gagal: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Simpan ke Cloud';
+        }
+    },
     // ===== SAVE WARGA =====
     async saveWarga(e) {
         e.preventDefault();
@@ -532,25 +594,32 @@ const app = {
         const t = this.transaksi.find(x => x.id === id);
         if (!t) return;
         
-        document.getElementById('edit-id').value = t.id;
-        document.getElementById('warga-id').value = t.warga_id || '';
-        document.getElementById('no-rumah').value = t.no_rumah || '';
-        document.getElementById('nominal').value = t.nominal;
-        document.getElementById('tanggal').value = t.tanggal;
-        document.getElementById('status-bayar').value = t.status;
-        document.getElementById('catatan').value = t.catatan || '';
-        
-        document.getElementById('bulan-iuran').value = t.bulan_iuran || '';
-        
-        this.generateTahunOptions();
-        if (t.tahun_iuran) {
-            const tahunSelect = document.getElementById('tahun-iuran');
-            if ([...tahunSelect.options].some(o => o.value == t.tahun_iuran)) {
-                tahunSelect.value = t.tahun_iuran;
+        if (t.jenis === 'keluar') {
+            document.getElementById('edit-pengeluaran-id').value = t.id;
+            document.getElementById('tgl-pengeluaran').value = t.tanggal;
+            document.getElementById('nominal-pengeluaran').value = t.nominal;
+            document.getElementById('keterangan-pengeluaran').value = t.catatan || t.atas_nama || '';
+            this.openModal('modal-pengeluaran');
+        } else {
+            document.getElementById('edit-id').value = t.id;
+            document.getElementById('warga-id').value = t.warga_id || '';
+            document.getElementById('no-rumah').value = t.no_rumah || '';
+            document.getElementById('nominal').value = t.nominal;
+            document.getElementById('tanggal').value = t.tanggal;
+            document.getElementById('status-bayar').value = t.status;
+            document.getElementById('catatan').value = t.catatan || '';
+            
+            document.getElementById('bulan-iuran').value = t.bulan_iuran || '';
+            
+            this.generateTahunOptions();
+            if (t.tahun_iuran) {
+                const tahunSelect = document.getElementById('tahun-iuran');
+                if ([...tahunSelect.options].some(o => o.value == t.tahun_iuran)) {
+                    tahunSelect.value = t.tahun_iuran;
+                }
             }
+            this.openModal('modal-input');
         }
-        
-        this.openModal('modal-input');
     },
 
     editWarga(id) {
