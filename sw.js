@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kas-perumahan-v1';
+const CACHE_NAME = 'kas-perumahan-v2';
 const urlsToCache = [
   '/',
   '/index.html',
