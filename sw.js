@@ -58,6 +58,13 @@ self.addEventListener('activate', event => {
 
 // Fetch
 self.addEventListener('fetch', event => {
+    // 1. Abaikan method selain GET (seperti POST, PUT, DELETE)
+    if (event.request.method !== 'GET') return;
+    
+    // 2. Abaikan request yang mengarah ke API Supabase agar selalu real-time
+    if (event.request.url.includes('supabase.co')) return;
+    
+    // 3. Untuk request GET file web (HTML/CSS/JS), lakukan caching
     event.respondWith(
         fetch(event.request)
             .then(response => {
@@ -68,7 +75,6 @@ self.addEventListener('fetch', event => {
             .catch(() => caches.match(event.request))
     );
 });
-
 // Message dari app
 self.addEventListener('message', event => {
     if (event.data === 'CHECK_VERSION') {
