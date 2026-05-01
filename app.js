@@ -185,6 +185,7 @@ const app = {
     },
 
     // ===== NAVIGATION =====
+    // ===== NAVIGATION =====
     navigateTo(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -201,14 +202,20 @@ const app = {
         };
         document.getElementById('header-subtitle').textContent = titles[page];
 
-        if (page === 'transaksi') this.renderListTransaksi();
-        if (page === 'warga') this.renderListWarga();
-        if (page === 'home') this.renderDashboard();
+        // Panggil fungsi render sesuai halaman yang dibuka
+        if (page === 'home') {
+            this.renderDashboard();
+        } else if (page === 'warga') {
+            this.renderListWarga();
+        } else if (page === 'transaksi') {
+            this.prepareRekapTahun(); // Siapkan pilihan tahun untuk rekap
+            this.renderRekapTahunan(); // Jalankan rekap tabel
+            this.renderListTransaksi(); // Render daftar riwayat transaksi di bawahnya
+        }
 
         document.getElementById('main-content').scrollTop = 0;
     },
-
-    // ===== MODAL =====
+    
     // ===== MODAL =====
     openModal(id) {
         document.getElementById(id).classList.add('active');
@@ -906,6 +913,47 @@ const app = {
         alert('✅ Semua data dihapus');
     }
 };
+renderRekapTahunan() {
+        const tahun = document.getElementById('rekap-tahun-select').value;
+        const thead = document.getElementById('thead-rekap');
+        const tbody = document.getElementById('tbody-rekap');
+        if (!thead || !tbody) return;
+
+        // Render Header (Bulan)
+        let headerHtml = `<tr><th>Warga</th>`;
+        for (let i = 1; i <= 12; i++) {
+            headerHtml += `<th>${this.namaBulanSingkat[i]}</th>`;
+        }
+        headerHtml += `</tr>`;
+        thead.innerHTML = headerHtml;
+
+        // Render Baris (Per Warga)
+        const wargaAktif = this.warga.filter(w => w.status === 'aktif').sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
+        
+        tbody.innerHTML = wargaAktif.map(w => {
+            let row = `<tr><td>${w.no_rumah}<br><small>${w.nama.split(' ')[0]}</small></td>`;
+            for (let bulan = 1; bulan <= 12; bulan++) {
+                const lunas = this.transaksi.find(t => 
+                    t.warga_id === w.id && 
+                    t.tahun_iuran == tahun && 
+                    t.bulan_iuran == bulan && 
+                    t.status === 'lunas'
+                );
+                row += `<td style="background: ${lunas ? '#c6f6d5' : '#fff5f5'}">${lunas ? '✅' : '❌'}</td>`;
+            }
+            row += `</tr>`;
+            return row;
+        }).join('');
+    },
+  prepareRekapTahun() {
+        const select = document.getElementById('rekap-tahun-select');
+        if (select && select.innerHTML === '') {
+            const yr = new Date().getFullYear();
+            for (let i = yr - 1; i <= yr + 1; i++) {
+                select.innerHTML += `<option value="${i}" ${i === yr ? 'selected' : ''}>${i}</option>`;
+            }
+        }
+    },
 
 // ===== START APP =====
 document.addEventListener('DOMContentLoaded', () => app.init());
