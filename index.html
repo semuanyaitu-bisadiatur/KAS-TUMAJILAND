@@ -33,7 +33,10 @@
     </header>
 
     <!-- VERSION DISPLAY -->
-    <div class="version-info" id="version-display">v1.0.0</div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <div class="version-info" id="version-display" style="margin: 0;">v1.0.0</div>
+        <button onclick="app.mintaAksesAdmin()" style="background:none; border:none; font-size:14px; cursor:pointer; padding: 0; filter: grayscale(1);">🔐</button>
+    </div>
     
     <!-- STATUS -->
     <div class="status-bar status-offline" id="status-bar">⏳ Menghubungkan...</div>
@@ -451,9 +454,9 @@
             <div class="modal-header">
                 <div class="modal-title">🏠 Detail Warga</div>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <button id="btn-edit-warga-header" style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 5px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold;">
-                        ✏️ Edit
-                    </button>
+                    <button class="btn btn-primary" id="btn-lanjut-edit" style="background: var(--warning); display: none;">
+                        ✏️ Ubah Data
+                            </button>
                     <button class="modal-close" onclick="app.closeModal('modal-detail-warga')">✕</button>
                 </div>
             </div>
