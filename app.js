@@ -904,7 +904,7 @@ const app = {
         const wargaAktif = this.warga.filter(w => w.status === 'aktif').sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
         
         tbody.innerHTML = wargaAktif.map(w => {
-            let row = `<tr><td>${w.no_rumah}<br><small>${w.nama.split(' ')[0]}</small></td>`;
+            let row = `<tr><td>${w.no_rumah}<br><small>${w.nama}</small></td>`;
             for (let bulan = 1; bulan <= 12; bulan++) {
                 const lunas = this.transaksi.find(t => 
                     t.warga_id === w.id && 
