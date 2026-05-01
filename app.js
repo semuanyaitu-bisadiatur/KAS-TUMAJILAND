@@ -966,12 +966,12 @@ const app = {
         const tahun = document.getElementById('rekap-tahun-select').value;
         let csv = `REKAP IURAN WARGA TAHUN ${tahun}\n\n`;
         
-        // Membuat Header Kolom
+        // Membuat Header Kolom (No. Rumah, Nama, Jan, Feb, ... Des)
         const headers = ['No. Rumah', 'Nama'];
         for (let i = 1; i <= 12; i++) {
             headers.push(this.namaBulan[i]);
         }
-        csv += headers.join(';') + '\n';
+        csv += headers.join(';') + '\n'; // Menggunakan titik koma agar rapi di Excel
         
         // Mengambil data warga aktif
         const wargaAktif = this.warga.filter(w => w.status === 'aktif')
@@ -981,11 +981,21 @@ const app = {
         wargaAktif.forEach(w => {
             let row = [w.no_rumah, w.nama];
             
+            // --- AWAL BLOK FOR ---
             for (let bulan = 1; bulan <= 12; bulan++) {
-                // ...
+                const lunas = this.transaksi.find(t => 
+                    t.warga_id === w.id && 
+                    t.tahun_iuran == tahun && 
+                    t.bulan_iuran == bulan && 
+                    t.status === 'lunas'
+                );
+                
+                // Pastikan push ini ada di dalam blok for
                 row.push(lunas ? 'LUNAS' : '-');
-            }
-            csv += row.join(';') + '\n'; // Diganti menjadi titik koma (;)
+            } 
+            // --- AKHIR BLOK FOR ---
+            
+            csv += row.join(';') + '\n';
         });
 
         // Proses Download File
@@ -994,7 +1004,7 @@ const app = {
         const url = URL.createObjectURL(blob);
         
         link.setAttribute('href', url);
-        link.setAttribute('download', `Rekap_Iuran_${tahun}_Export_${new Date().getTime()}.csv`);
+        link.setAttribute('download', `Rekap_Iuran_${tahun}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
