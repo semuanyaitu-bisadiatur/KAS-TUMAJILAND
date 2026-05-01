@@ -26,6 +26,9 @@ const app = {
     namaBulan: ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
     namaBulanSingkat: ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
 
+    isConnected: false,
+    isAdmin: localStorage.getItem('kasAdminMode') === 'aktif', // A. Ganti logika constructor ke sini
+    
     // ===== INIT =====
     init() {
         // Tampilkan versi
@@ -41,6 +44,7 @@ const app = {
         // Auto-connect Supabase (langsung dari config)
         this.initSupabase();
         this.testConnection();
+        this.applyAdminStatus();
 
         // Register SW
         if ('serviceWorker' in navigator) {
@@ -448,6 +452,50 @@ const app = {
         `}).join('');
     },
 
+    // ===== B. FITUR AKSES ADMIN =====
+    mintaAksesAdmin() {
+        if (this.isAdmin) {
+            if (confirm("Kunci kembali akses admin?")) {
+                this.isAdmin = false;
+                localStorage.removeItem('kasAdminMode');
+                this.applyAdminStatus();
+                alert("Akses Admin dikunci.");
+            }
+            return;
+        }
+
+        const pin = prompt("Masukkan PIN Admin:");
+        const PIN_BENAR = "12345"; // 🔥 GANTI PIN ANDA DI SINI
+
+        if (pin === PIN_BENAR) {
+            alert("Akses Admin Terbuka!");
+            this.isAdmin = true;
+            localStorage.setItem('kasAdminMode', 'aktif');
+            this.applyAdminStatus();
+        } else {
+            alert("PIN Salah!");
+        }
+    },
+
+    applyAdminStatus() {
+        // Daftar ID tombol yang harus disembunyikan/munculkan
+        const elements = {
+            'btn-edit-warga-header': this.isAdmin ? 'block' : 'none',
+            'btn-lanjut-edit': this.isAdmin ? 'block' : 'none',
+            'btn-tambah-warga': this.isAdmin ? 'block' : 'none',
+            'btn-group-transaksi': this.isAdmin ? 'flex' : 'none'
+        };
+
+        for (const [id, displayValue] of Object.entries(elements)) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = displayValue;
+        }
+        
+        // Filter ikon gembok (abu-abu jika terkunci, berwarna jika terbuka)
+        const lockBtn = document.querySelector('button[onclick="app.mintaAksesAdmin()"]');
+        if (lockBtn) lockBtn.style.filter = this.isAdmin ? 'grayscale(0)' : 'grayscale(1)';
+    },
+    
     // ===== SAVE TRANSAKSI =====
     async saveTransaksi(e) {
         e.preventDefault();
@@ -745,7 +793,7 @@ const app = {
                 this.editTransaksi(id);
             };
         }
-
+        this.applyAdminStatus();
         this.openModal('modal-detail-transaksi');
     },
 
@@ -823,7 +871,7 @@ const app = {
             this.closeModal('modal-detail-warga');
             this.editWarga(w.id);
         };
-
+        this.applyAdminStatus();
         this.openModal('modal-detail-warga');
     },
 
