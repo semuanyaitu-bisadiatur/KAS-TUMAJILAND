@@ -395,9 +395,25 @@ const app = {
             return;
         }
 
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+
         container.innerHTML = sorted.map(w => {
-            const tunggakan = this.transaksi.filter(t => t.warga_id === w.id && t.status === 'nunggak')
-                                           .reduce((s,t) => s + t.nominal, 0);
+            // Hitung tunggakan otomatis untuk list
+            let bulanBelumBayar = 0;
+            for (let i = 1; i <= currentMonth; i++) {
+                const sudahBayar = this.transaksi.find(t => 
+                    t.warga_id === w.id && 
+                    t.tahun_iuran == currentYear && 
+                    t.bulan_iuran == i && 
+                    t.status === 'lunas' &&
+                    t.jenis === 'masuk'
+                );
+                if (!sudahBayar) bulanBelumBayar++;
+            }
+            const tunggakan = bulanBelumBayar * (w.iuran_bulanan || 0);
+
             return `
             <div class="list-item" onclick="app.showDetailWarga('${w.id}')">
                 <div class="list-icon ${w.status === 'aktif' ? 'blue' : w.status === 'pindah' ? 'red' : 'yellow'}">
@@ -412,7 +428,7 @@ const app = {
                     <span class="badge badge-${w.status === 'aktif' ? 'green' : w.status === 'pindah' ? 'red' : 'yellow'}">
                         ${w.status}
                     </span>
-                    ${tunggakan > 0 ? `<div style="font-size: 11px; color: var(--danger); margin-top: 4px;">Tunggak: ${this.formatRp(tunggakan)}</div>` : ''}
+                    ${tunggakan > 0 ? `<div style="font-size: 11px; color: var(--danger); margin-top: 4px;">Tunggak: ${bulanBelumBayar} Bln (${this.formatRp(tunggakan)})</div>` : ''}
                 </div>
             </div>
         `}).join('');
@@ -733,13 +749,44 @@ const app = {
         this.openModal('modal-warga');
     },
 
+    // ===== DETAIL WARGA =====
     showDetailWarga(id) {
         const w = this.warga.find(x => x.id === id);
         if (!w) return;
 
         const container = document.getElementById('content-detail-warga');
-        const tunggakan = this.transaksi.filter(t => t.warga_id === w.id && t.status === 'nunggak')
-                                       .reduce((s, t) => s + t.nominal, 0);
+        
+        // --- LOGIKA TUNGGAKAN OTOMATIS TAHUN INI ---
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // Bulan 1 (Jan) sampai bulan saat ini
+        
+        let bulanBelumBayar = 0;
+        let detailBulanTunggak = [];
+
+        // Cek dari Januari sampai bulan saat ini
+        for (let i = 1; i <= currentMonth; i++) {
+            const sudahBayar = this.transaksi.find(t => 
+                t.warga_id === w.id && 
+                t.tahun_iuran == currentYear && 
+                t.bulan_iuran == i && 
+                t.status === 'lunas' &&
+                t.jenis === 'masuk'
+            );
+            
+            if (!sudahBayar) {
+                bulanBelumBayar++;
+                detailBulanTunggak.push(this.namaBulanSingkat[i]);
+            }
+        }
+
+        const totalTunggakan = bulanBelumBayar * (w.iuran_bulanan || 0);
+        
+        // Format teks tunggakan (Contoh: Rp100.000 (Jan, Feb))
+        let teksTunggakan = `<span style="color: var(--success);">Tidak ada (Lunas)</span>`;
+        if (bulanBelumBayar > 0) {
+            teksTunggakan = `${this.formatRp(totalTunggakan)} <span style="font-size: 11px; font-weight: normal; color: var(--gray);">(${detailBulanTunggak.join(', ')})</span>`;
+        }
 
         container.innerHTML = `
             <div style="display: grid; grid-template-columns: 110px 1fr; gap: 8px;">
@@ -748,7 +795,7 @@ const app = {
                 <div style="color: var(--gray);">Iuran Bulanan</div><div>: ${this.formatRp(w.iuran_bulanan)}</div>
                 <div style="color: var(--gray);">No. HP</div><div>: ${w.hp || '-'}</div>
                 <div style="color: var(--gray);">Status</div><div>: ${w.status.toUpperCase()}</div>
-                <div style="color: var(--gray);">Tunggakan</div><div style="color: var(--danger); font-weight: bold;">: ${this.formatRp(tunggakan)}</div>
+                <div style="color: var(--gray);">Tunggakan</div><div style="color: var(--danger); font-weight: bold;">: ${teksTunggakan}</div>
             </div>
         `;
 
