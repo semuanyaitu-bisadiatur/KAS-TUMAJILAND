@@ -4,23 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kas Perumahan</title>
-    <link rel="manifest" href="manifest.json?v=1.0.0">
+    
+    <!-- VERSION.JS HARUS PERTAMA! -->
+    <script src="version.js"></script>
+    
+    <!-- Auto cache-buster dari version.js -->
+    <link rel="manifest" id="manifest-link">
+    <link rel="stylesheet" id="style-link">
+    
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- Cache buster: ganti v=1.0.0 setiap update -->
-    <link rel="stylesheet" href="style.css?v=1.0.0">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 </head>
 <body>
-
-    <!-- UPDATE TOAST (hidden by default) -->
+    <!-- UPDATE TOAST -->
     <div id="update-toast" class="update-toast hidden">
         <div class="update-content">
             <span>🎉 Versi baru tersedia!</span>
-            <button onclick="location.reload(true)">🔄 Update Sekarang</button>
+            <button onclick="app.checkUpdate()">🔄 Update Sekarang</button>
         </div>
     </div>
 
@@ -31,11 +34,9 @@
     </header>
 
     <!-- STATUS -->
-    <div class="status-bar status-offline" id="status-bar">
-        ⏳ Menghubungkan...
-    </div>
+    <div class="status-bar status-offline" id="status-bar">⏳ Menghubungkan...</div>
 
-    <!-- VERSION INFO (kecil di pojok) -->
+    <!-- VERSION DISPLAY -->
     <div class="version-info" id="version-display">v1.0.0</div>
 
     <!-- MAIN CONTENT -->
@@ -157,7 +158,6 @@
                 <input type="file" id="import-file" class="hidden" accept=".csv" onchange="app.importCSV(this)">
             </div>
 
-            <!-- VERSION INFO CARD -->
             <div class="card">
                 <div class="card-title">ℹ️ Tentang Aplikasi</div>
                 <div style="text-align: center; padding: 10px;">
@@ -165,7 +165,7 @@
                     <div style="font-size: 18px; font-weight: 700; color: var(--dark);">Kas Perumahan</div>
                     <div style="font-size: 14px; color: var(--gray); margin-top: 4px;">Versi <span id="app-version">1.0.0</span></div>
                     <div style="font-size: 12px; color: var(--gray); margin-top: 8px;">
-                        Terakhir update: <span id="last-update">-</span>
+                        Cache: <span id="cache-name">-</span>
                     </div>
                     <button class="btn btn-outline" onclick="app.checkUpdate()" style="margin-top: 16px;">
                         🔄 Cek Update
@@ -331,7 +331,16 @@
         </div>
     </div>
 
-    <!-- Cache buster: ganti v=1.0.0 setiap update -->
-    <script src="app.js?v=1.0.0"></script>
+    <!-- Auto set cache-buster dari version.js -->
+    <script>
+        document.getElementById('manifest-link').href = 'manifest.json?v=' + APP_VERSION;
+        document.getElementById('style-link').href = 'style.css?v=' + APP_VERSION;
+    </script>
+    
+    <!-- App JS dengan cache-buster -->
+    <script id="app-script"></script>
+    <script>
+        document.getElementById('app-script').src = 'app.js?v=' + APP_VERSION;
+    </script>
 </body>
 </html>
