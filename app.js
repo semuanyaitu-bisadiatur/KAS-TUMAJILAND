@@ -270,7 +270,7 @@ const app = {
         
         select.innerHTML = '<option value="">Pilih Warga</option>';
         this.warga.filter(w => w.status === 'aktif')
-            .sort((a,b) => a.no_rumah.localeCompare(b.no_rumah))
+            .sort((a, b) => a.no_rumah.localeCompare(b.no_rumah, undefined, { numeric: true }))
             .forEach(w => {
                 const opt = document.createElement('option');
                 opt.value = w.id;
@@ -389,7 +389,7 @@ const app = {
         const container = document.getElementById('list-warga');
         if (!container) return;
         
-        const sorted = [...this.warga].sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
+        const sorted = [...this.warga].sort((a, b) => a.no_rumah.localeCompare(b.no_rumah, undefined, { numeric: true }));
 
         if (sorted.length === 0) {
             container.innerHTML = `
@@ -925,8 +925,10 @@ const app = {
         headerHtml += `</tr>`;
         thead.innerHTML = headerHtml;
 
-        // Render Baris (Per Warga)
-        const wargaAktif = this.warga.filter(w => w.status === 'aktif').sort((a,b) => a.no_rumah.localeCompare(b.no_rumah));
+        // --- BAGIAN YANG DIUBAH (NATURAL SORT) ---
+        const wargaAktif = this.warga.filter(w => w.status === 'aktif').sort((a, b) => 
+            a.no_rumah.localeCompare(b.no_rumah, undefined, { numeric: true, sensitivity: 'base' })
+        );
         
         tbody.innerHTML = wargaAktif.map(w => {
             let row = `<tr><td>${w.no_rumah}<br><small>${w.nama}</small></td>`;
