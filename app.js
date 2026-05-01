@@ -1,10 +1,13 @@
 // ===== KAS PERUMAHAN - APP LOGIC =====
+// APP_VERSION sudah didefinisikan di version.js (global)
 
 const app = {
-    // ===== VERSION CONTROL =====
-    VERSION: '1.0.0', // ← NAikkan ini setiap update (contoh: 1.0.1, 1.1.0, 2.0.0)
+    // Ambil versi dari global variable (dari version.js)
+    get VERSION() { return typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0'; },
+    get CACHE_NAME() { return typeof CACHE_NAME !== 'undefined' ? CACHE_NAME : 'kas-perumahan-1-0-0'; },
+    
     VERSION_KEY: 'app_version',
-    LAST_UPDATE_KEY: 'app_last_update',
+
     // Supabase
     supabase: null,
     isConnected: false,
@@ -22,6 +25,12 @@ const app = {
 
     // ===== INIT =====
     init() {
+        // Tampilkan versi di UI
+        this.showVersion();
+        
+        // Cek update
+        this.checkVersion();
+
         document.getElementById('sb-url').value = this.SB_URL;
         document.getElementById('sb-key').value = this.SB_KEY;
 
@@ -39,21 +48,77 @@ const app = {
             this.updateStatus('offline', '⚠️ Offline - Setup Supabase di Pengaturan');
         }
 
+        // Register SW
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(console.error);
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => {
+                    setInterval(() => reg.update(), 60000);
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                this.showUpdateToast();
+                            }
+                        });
+                    });
+                })
+                .catch(console.error);
         }
     },
 
-    // ===== GENERATE TAHUN DROPDOWN =====
+    // ===== VERSION DISPLAY =====
+    showVersion() {
+        document.getElementById('version-display').textContent = 'v' + this.VERSION;
+        document.getElementById('app-version').textContent = this.VERSION;
+        document.getElementById('cache-name').textContent = this.CACHE_NAME;
+    },
+
+    // ===== VERSION CHECK =====
+    checkVersion() {
+        const savedVersion = localStorage.getItem(this.VERSION_KEY);
+        
+        if (savedVersion && savedVersion !== this.VERSION) {
+            this.showUpdateToast();
+        }
+        
+        localStorage.setItem(this.VERSION_KEY, this.VERSION);
+    },
+
+    showUpdateToast() {
+        document.getElementById('update-toast').classList.remove('hidden');
+    },
+
+    // ===== CHECK UPDATE (Manual) =====
+    async checkUpdate() {
+        const btn = event.target;
+        btn.textContent = '⏳...';
+        btn.disabled = true;
+
+        try {
+            // Hapus cache lama
+            const keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+            
+            // Unregister SW
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(reg => reg.unregister()));
+            
+            alert('✅ Update diterapkan! Halaman akan dimuat ulang.');
+            window.location.reload(true);
+        } catch(err) {
+            alert('❌ Gagal: ' + err.message);
+            btn.textContent = '🔄 Cek Update';
+            btn.disabled = false;
+        }
+    },
+
+    // ===== GENERATE TAHUN =====
     generateTahunOptions() {
         const select = document.getElementById('tahun-iuran');
         select.innerHTML = '<option value="">Pilih Tahun</option>';
         
         const tahunSekarang = new Date().getFullYear();
-        const tahunAwal = tahunSekarang - 1;
-        const tahunAkhir = tahunSekarang + 5;
-        
-        for (let t = tahunAwal; t <= tahunAkhir; t++) {
+        for (let t = tahunSekarang - 1; t <= tahunSekarang + 5; t++) {
             const opt = document.createElement('option');
             opt.value = t;
             opt.textContent = t;
@@ -177,7 +242,6 @@ const app = {
         document.getElementById('edit-id').value = '';
         document.getElementById('edit-warga-id').value = '';
         
-        // Reset dropdown ke default
         const now = new Date();
         document.getElementById('bulan-iuran').value = now.getMonth() + 1;
         this.generateTahunOptions();
@@ -457,10 +521,8 @@ const app = {
         document.getElementById('status-bayar').value = t.status;
         document.getElementById('catatan').value = t.catatan || '';
         
-        // Set dropdown bulan & tahun
         document.getElementById('bulan-iuran').value = t.bulan_iuran || '';
         
-        // Regenerate tahun options dan set selected
         this.generateTahunOptions();
         if (t.tahun_iuran) {
             const tahunSelect = document.getElementById('tahun-iuran');
