@@ -126,7 +126,14 @@
             </div>
 
             <div class="card">
-                <div class="card-title">📑 Riwayat Transaksi</div>
+                <div class="card-title" style="justify-content: space-between;">
+                    <span>📑 Riwayat Transaksi</span>
+                    <select id="filter-transaksi" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12px; outline: none; background: #f7fafc;" onchange="app.renderListTransaksi()">
+                        <option value="semua">Semua</option>
+                        <option value="masuk">Pemasukan 💰</option>
+                        <option value="keluar">Pengeluaran 💸</option>
+                    </select>
+                </div>
                 <div id="list-transaksi"></div>
             </div>
             
