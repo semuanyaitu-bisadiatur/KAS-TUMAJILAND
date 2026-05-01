@@ -98,7 +98,10 @@
         <div class="page" id="page-transaksi">
             <div class="btn-group" style="margin-bottom: 16px;">
                 <button class="btn btn-primary" onclick="app.openModal('modal-input')">
-                    ➕ Input Iuran
+                    ➕ Iuran
+                </button>
+                <button class="btn btn-success" onclick="app.openModal('modal-pemasukan-lain')">
+                    ➕ Pemasukan Lain
                 </button>
                 <button class="btn btn-danger" onclick="app.openModal('modal-pengeluaran')">
                     ➖ Pengeluaran
@@ -316,6 +319,36 @@
                 </div>
                 
                 <button type="submit" class="btn btn-primary">💾 Simpan ke Cloud</button>
+            </form>
+        </div>
+    </div>
+<div class="modal-overlay" id="modal-pemasukan-lain">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title" style="color: var(--success);">💰 Pemasukan Lain</div>
+                <button class="modal-close" onclick="app.closeModal('modal-pemasukan-lain')">✕</button>
+            </div>
+            <form id="form-pemasukan-lain" onsubmit="app.savePemasukanLain(event)">
+                <input type="hidden" id="edit-pemasukan-lain-id">
+                
+                <div class="form-group">
+                    <label class="form-label">Tanggal Masuk</label>
+                    <input type="date" id="tgl-pemasukan-lain" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input type="number" id="nominal-pemasukan-lain" class="form-input" required min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Sumber / Keterangan</label>
+                    <input type="text" id="keterangan-pemasukan-lain" class="form-input" required placeholder="Contoh: Donasi 17an, Denda, Subsidi Desa">
+                </div>
+                
+                <button type="submit" class="btn btn-success" id="btn-save-pemasukan-lain">
+                    💾 Simpan ke Cloud
+                </button>
             </form>
         </div>
     </div>
