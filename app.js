@@ -361,9 +361,20 @@ const app = {
     // ===== RENDER LIST TRANSAKSI =====
     renderListTransaksi() {
         const container = document.getElementById('list-transaksi');
+        const filterEl = document.getElementById('filter-transaksi'); // Ambil elemen filter
         if (!container) return;
         
-        const sorted = [...this.transaksi].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+        // Cek nilai filter saat ini (jika tidak ada, default ke 'semua')
+        const filterVal = filterEl ? filterEl.value : 'semua';
+        
+        // Saring data berdasarkan filter yang dipilih
+        let filteredTrx = [...this.transaksi];
+        if (filterVal !== 'semua') {
+            filteredTrx = filteredTrx.filter(t => t.jenis === filterVal);
+        }
+
+        // Urutkan dari yang paling baru
+        const sorted = filteredTrx.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
 
         if (sorted.length === 0) {
             container.innerHTML = `
@@ -382,8 +393,8 @@ const app = {
                 <div class="list-content">
                     <div class="list-title">${t.atas_nama || '-'}</div>
                     <div class="list-subtitle">
-                        ${t.no_rumah || '-'} • 
-                        ${this.namaBulanSingkat[t.bulan_iuran] || ''} ${t.tahun_iuran || ''} • 
+                        ${t.no_rumah ? t.no_rumah + ' • ' : ''} 
+                        ${t.bulan_iuran ? this.namaBulanSingkat[t.bulan_iuran] + ' ' + (t.tahun_iuran || '') + ' • ' : ''} 
                         ${new Date(t.tanggal).toLocaleDateString('id-ID')}
                     </div>
                 </div>
