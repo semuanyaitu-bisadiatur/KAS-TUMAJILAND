@@ -1,58 +1,83 @@
-// ===== SERVICE WORKER + VERSION CONTROL =====
-const CACHE_NAME = 'kas-perumahan-v1-0-0'; // ← GANTI setiap update
-const APP_VERSION = '1.0.0'; // ← SAMAKAN dengan app.js
+// ============================================
+// SW - VERSION AMBIL DARI GLOBAL VARIABLE
+// ============================================
+
+// Import version.js terlebih dahulu (via importScripts di production)
+// Untuk sederhana, kita gunakan cara lain: fetch version.js
+
+let SW_VERSION = '1.0.0';
+let SW_CACHE_NAME = 'kas-perumahan-1-0-0';
+
+// Fetch version.js untuk dapat versi terbaru
+async function getVersion() {
+    try {
+        const response = await fetch('./version.js', { cache: 'no-store' });
+        const text = await response.text();
+        
+        // Extract APP_VERSION dari text
+        const match = text.match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+        if (match) {
+            SW_VERSION = match[1];
+            SW_CACHE_NAME = 'kas-perumahan-' + SW_VERSION.replace(/\./g, '-');
+        }
+    } catch(e) {
+        console.log('Using default version');
+    }
+}
+
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css?v=1.0.0',  // ← SAMAKAN versi
-  '/app.js?v=1.0.0'      // ← SAMAKAN versi
+    './',
+    './index.html',
+    './version.js',
+    './style.css',
+    './app.js'
 ];
 
-// Install: cache file
+// Install
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Langsung aktif, tunggu tidak perlu
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  );
-});
-
-// Activate: hapus cache lama
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-// Fetch: ambil dari network dulu, fallback ke cache
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Update cache dengan versi terbaru
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
-});
-
-// Listen message dari app.js untuk cek versi
-self.addEventListener('message', event => {
-  if (event.data === 'CHECK_VERSION') {
-    event.ports[0].postMessage({
-      version: APP_VERSION,
-      cacheName: CACHE_NAME
-    });
-  }
-  
-  if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
-  }
+    event.waitUntil(
+        getVersion().then(() => {
+            return caches.open(SW_CACHE_NAME).then(cache => cache.addAll(urlsToCache));
+        })
+    );
+});
+
+// Activate
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames
+                    .filter(name => name !== SW_CACHE_NAME)
+                    .map(name => caches.delete(name))
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+// Fetch
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        fetch(event.request)
+            .then(response => {
+                const clone = response.clone();
+                caches.open(SW_CACHE_NAME).then(cache => cache.put(event.request, clone));
+                return response;
+            })
+            .catch(() => caches.match(event.request))
+    );
+});
+
+// Message dari app
+self.addEventListener('message', event => {
+    if (event.data === 'CHECK_VERSION') {
+        event.ports[0].postMessage({
+            version: SW_VERSION,
+            cacheName: SW_CACHE_NAME
+        });
+    }
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
