@@ -188,12 +188,12 @@
                 <input type="file" id="import-file" class="hidden" accept=".csv" onchange="app.importCSV(this)">
             </div>
 
-            <div class="card danger-zone">
+            <div class="card danger-zone" id="danger-zone-card" style="display: none;">
                 <div class="card-title" style="color: #c53030;">⚠️ Zona Berbahaya</div>
-                <button class="btn btn-danger" onclick="app.resetAllData()">
-                    🗑️ Hapus Semua Data
+                    <button class="btn btn-danger" onclick="app.resetAllData()">
+                     🗑️ Hapus Semua Data
                 </button>
-            </div>
+        </div>
         </div>
 
     </main>
