@@ -209,6 +209,7 @@ const app = {
     },
 
     // ===== MODAL =====
+    // ===== MODAL =====
     openModal(id) {
         document.getElementById(id).classList.add('active');
         if (id === 'modal-input') {
@@ -218,6 +219,8 @@ const app = {
             this.generateTahunOptions();
         } else if (id === 'modal-pengeluaran') {
             document.getElementById('tgl-pengeluaran').valueAsDate = new Date();
+        } else if (id === 'modal-pemasukan-lain') {
+            document.getElementById('tgl-pemasukan-lain').valueAsDate = new Date();
         }
     },
 
@@ -226,10 +229,12 @@ const app = {
         if (id === 'modal-input') document.getElementById('form-transaksi').reset();
         if (id === 'modal-warga') document.getElementById('form-warga').reset();
         if (id === 'modal-pengeluaran') document.getElementById('form-pengeluaran').reset();
+        if (id === 'modal-pemasukan-lain') document.getElementById('form-pemasukan-lain').reset();
         
         document.getElementById('edit-id').value = '';
         document.getElementById('edit-warga-id').value = '';
         document.getElementById('edit-pengeluaran-id').value = '';
+        document.getElementById('edit-pemasukan-lain-id').value = '';
         
         const now = new Date();
         document.getElementById('bulan-iuran').value = now.getMonth() + 1;
@@ -544,6 +549,64 @@ const app = {
             btn.textContent = '💾 Simpan ke Cloud';
         }
     },
+// ===== SAVE PEMASUKAN LAIN =====
+    async savePemasukanLain(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-pemasukan-lain');
+        btn.disabled = true;
+        btn.textContent = '⏳...';
+
+        const keterangan = document.getElementById('keterangan-pemasukan-lain').value;
+
+        const data = {
+            id: document.getElementById('edit-pemasukan-lain-id').value || 'TRX-IN-' + Date.now(),
+            tanggal: document.getElementById('tgl-pemasukan-lain').value,
+            jenis: 'masuk',
+            kategori: 'pemasukan-lain',
+            warga_id: null,
+            no_rumah: '',
+            atas_nama: keterangan, // Menyimpan sumber uang di atas nama agar terbaca rapi di list
+            nominal: parseFloat(document.getElementById('nominal-pemasukan-lain').value) || 0,
+            auto_nominal: false,
+            status: 'lunas',
+            bulan_iuran: null,
+            tahun_iuran: null,
+            catatan: keterangan
+        };
+
+        try {
+            if (this.isConnected && this.supabase) {
+                const existing = document.getElementById('edit-pemasukan-lain-id').value;
+                if (existing) {
+                    await this.supabase.from('transaksi').update(data).eq('id', existing);
+                    const idx = this.transaksi.findIndex(t => t.id === existing);
+                    if (idx >= 0) this.transaksi[idx] = data;
+                } else {
+                    await this.supabase.from('transaksi').insert([data]);
+                    this.transaksi.unshift(data);
+                }
+            } else {
+                const existing = document.getElementById('edit-pemasukan-lain-id').value;
+                if (existing) {
+                    const idx = this.transaksi.findIndex(t => t.id === existing);
+                    if (idx >= 0) this.transaksi[idx] = data;
+                } else {
+                    this.transaksi.unshift(data);
+                }
+                this.saveLocal();
+            }
+
+            this.closeModal('modal-pemasukan-lain');
+            this.renderDashboard();
+            this.renderListTransaksi();
+            this.updateStatus('online', '✓ Pemasukan Lain Tersimpan');
+        } catch(err) {
+            alert('Gagal: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Simpan ke Cloud';
+        }
+    },
     // ===== SAVE WARGA =====
     async saveWarga(e) {
         e.preventDefault();
@@ -600,7 +663,14 @@ const app = {
             document.getElementById('nominal-pengeluaran').value = t.nominal;
             document.getElementById('keterangan-pengeluaran').value = t.catatan || t.atas_nama || '';
             this.openModal('modal-pengeluaran');
+        } else if (t.jenis === 'masuk' && t.kategori === 'pemasukan-lain') {
+            document.getElementById('edit-pemasukan-lain-id').value = t.id;
+            document.getElementById('tgl-pemasukan-lain').value = t.tanggal;
+            document.getElementById('nominal-pemasukan-lain').value = t.nominal;
+            document.getElementById('keterangan-pemasukan-lain').value = t.catatan || t.atas_nama || '';
+            this.openModal('modal-pemasukan-lain');
         } else {
+            // Ini untuk transaksi Iuran standar
             document.getElementById('edit-id').value = t.id;
             document.getElementById('warga-id').value = t.warga_id || '';
             document.getElementById('no-rumah').value = t.no_rumah || '';
@@ -621,7 +691,6 @@ const app = {
             this.openModal('modal-input');
         }
     },
-
     editWarga(id) {
         const w = this.warga.find(x => x.id === id);
         if (!w) return;
