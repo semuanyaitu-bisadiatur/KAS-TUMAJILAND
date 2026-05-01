@@ -475,3 +475,19 @@ body {
     z-index: 101;
     font-weight: 600;
 }
+#table-rekap th, #table-rekap td {
+    padding: 8px 4px;
+    border: 1px solid #e2e8f0;
+    text-align: center;
+    white-space: nowrap;
+}
+#table-rekap th { background: #f7fafc; color: var(--gray); font-weight: 700; }
+#table-rekap td:first-child { 
+    position: sticky; 
+    left: 0; 
+    background: white; 
+    z-index: 5; 
+    text-align: left; 
+    font-weight: 700;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
