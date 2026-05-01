@@ -139,7 +139,7 @@
 
         <!-- PAGE: WARGA -->
         <div class="page" id="page-warga">
-            <button class="btn btn-primary" onclick="app.openModal('modal-warga')" style="margin-bottom: 16px;">
+            <button id="btn-tambah-warga" class="btn btn-primary" onclick="app.openModal('modal-warga')" style="margin-bottom: 16px; display: none;">
                 ➕ Tambah Warga
             </button>
             <div class="card">
@@ -437,29 +437,28 @@
                 <button class="modal-close" onclick="app.closeModal('modal-detail-transaksi')">✕</button>
             </div>
             
-            <div id="content-detail-transaksi" style="line-height: 1.6; font-size: 14px;">
-                </div>
+            <div id="content-detail-transaksi" style="line-height: 1.6; font-size: 14px;"></div>
 
             <div class="btn-group" style="margin-top: 24px; gap: 10px;">
                 <button class="btn btn-outline" onclick="app.closeModal('modal-detail-transaksi')">Tutup</button>
                 
-                <button class="btn btn-primary" id="btn-lanjut-edit" style="background: var(--warning);">
+                <button class="btn btn-primary" id="btn-lanjut-edit" style="background: var(--warning); display: none;">
                     ✏️ Ubah Data
                 </button>
             </div>
         </div>
     </div>
     <div class="modal-overlay" id="modal-detail-warga">
-        <div class="modal-sheet">
-            <div class="modal-header">
-                <div class="modal-title">🏠 Detail Warga</div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <button class="btn btn-primary" id="btn-lanjut-edit" style="background: var(--warning); display: none;">
-                        ✏️ Ubah Data
-                            </button>
-                    <button class="modal-close" onclick="app.closeModal('modal-detail-warga')">✕</button>
-                </div>
+    <div class="modal-sheet">
+        <div class="modal-header">
+            <div class="modal-title">🏠 Detail Warga</div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-primary" id="btn-edit-warga-header" style="background: var(--warning); display: none;">
+                    ✏️ Ubah Data
+                </button>
+                <button class="modal-close" onclick="app.closeModal('modal-detail-warga')">✕</button>
             </div>
+        </div>
             
             <div id="content-detail-warga" style="line-height: 1.8; font-size: 14px; margin-bottom: 20px;">
                 </div>
