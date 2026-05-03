@@ -1102,7 +1102,8 @@ const app = {
                     t.bulan_iuran == bulan && 
                     t.status === 'lunas'
                 );
-                row += `<td style="background: ${lunas ? '#c6f6d5' : '#fff5f5'}">${lunas ? '✅' : '❌'}</td>`;
+                // Di dalam renderRekapTahunan, ubah warna background lunas menjadi lebih soft (premium)
+row += `<td style="background: ${lunas ? '#ecfdf5' : '#fff1f1'}; color: ${lunas ? '#059669' : '#e11d48'}; text-align: center; font-weight: bold;">${lunas ? '●' : '○'}</td>`;
             }
             row += `</tr>`;
             return row;
