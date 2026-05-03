@@ -28,18 +28,18 @@
 
     <!-- HEADER -->
     <header class="app-header">
-        <h1>🏘️ KAS TUMAJILAND</h1>
-        <p id="header-subtitle">Dashboard Monitoring</p>
+        <h1>🏘️ Kas Perumahan</h1>
+        <p id="header-subtitle">Dashboard</p>
     </header>
 
-    <div style="text-align: center; margin-top: -10px;">
-        <div class="status-bar status-offline" id="status-bar">⏳ Connecting...</div>
+    <!-- VERSION DISPLAY -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <div class="version-info" id="version-display" style="margin: 0;">v1.0.0</div>
+        <button onclick="app.mintaAksesAdmin()" style="background:none; border:none; font-size:14px; cursor:pointer; padding: 0; filter: grayscale(1);">🔐</button>
     </div>
-
-    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;">
-        <div class="version-info" id="version-display">v1.0.8</div>
-        <button onclick="app.mintaAksesAdmin()" style="background:none; border:none; cursor:pointer; opacity: 0.5;">🔐</button>
-    </div>
+    
+    <!-- STATUS -->
+    <div class="status-bar status-offline" id="status-bar">⏳ Menghubungkan...</div>
 
     <!-- MAIN CONTENT -->
     <main class="main-content" id="main-content">
