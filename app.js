@@ -970,9 +970,11 @@ const app = {
         const sel = document.getElementById('kartu-tahun');
         sel.innerHTML = '';
         const yr = new Date().getFullYear();
-        for(let i = yr - 2; i <= yr + 2; i++) {
-            sel.innerHTML += `<option value="${i}" ${i === yr ? 'selected' : ''}>Tahun ${i}</option>`;
-        }
+    const TAHUN_MULAI = 2025; // Tambahkan ini
+    sel.innerHTML = '';
+    for(let i = TAHUN_MULAI; i <= yr + 1; i++) { // Ubah loop-nya
+        sel.innerHTML += `<option value="${i}" ${i === yr ? 'selected' : ''}>Tahun ${i}</option>`;
+    }
 
         this.renderKartuIuran();
         this.openModal('modal-kartu-iuran');
@@ -1061,11 +1063,16 @@ const app = {
     // ===== FITUR REKAP TAHUNAN =====
     prepareRekapTahun() {
         const select = document.getElementById('rekap-tahun-select');
-        if (select && select.innerHTML === '') {
+        if (select) {
+            const TAHUN_MULAI = 2025; // Tetapkan tahun awal sistem
             const yr = new Date().getFullYear();
-            for (let i = yr - 1; i <= yr + 1; i++) {
-                select.innerHTML += `<option value="${i}" ${i === yr ? 'selected' : ''}>${i}</option>`;
+            const TAHUN_AKHIR = yr + 1; // Selalu tampilkan sampai 1 tahun ke depan
+            
+            let html = '';
+            for (let i = TAHUN_MULAI; i <= TAHUN_AKHIR; i++) {
+                html += `<option value="${i}" ${i === yr ? 'selected' : ''}>${i}</option>`;
             }
+            select.innerHTML = html;
         }
     },
 
