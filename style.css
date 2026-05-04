@@ -33,15 +33,186 @@ body {
     flex-direction: column;
 }
 
-/* ===== HEADER ===== */
+/* ================= UNIK TRAPESIUM HEADER ================= */
 .app-header {
-    background: linear-gradient(135deg, var(--primary), #764ba2);
-    color: white;
-    padding: 16px 20px;
-    text-align: center;
-    flex-shrink: 0;
     position: relative;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    padding: 35px 20px 75px 20px; /* Padding bawah ditambah untuk ruang trapesium */
+    color: white;
+    text-align: center;
+    overflow: visible; /* Penting agar bayangan tidak terpotong */
     z-index: 100;
+    
+    /* BENTUK TRAPESIUM ASIMETRIS (Unik) */
+    /* Garis bawah miring dari kiri (tinggi) ke kanan (rendah) */
+    clip-path: polygon(0 0, 100% 0, 100% 82%, 0 100%);
+}
+
+/* Layer Aksen di belakang header (Membuatnya lebih "Eye Catching") */
+.app-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    /* Bentuk trapesium yang berlawanan arah agar terlihat berlapis */
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%);
+    z-index: -1;
+}
+
+/* Memperbaiki posisi konten agar tidak terpengaruh miringnya trapesium */
+.header-content {
+    position: relative;
+    z-index: 2;
+    padding-bottom: 10px;
+}
+
+/* Efek Cahaya Artistik (Mesh) */
+.header-glow {
+    position: absolute;
+    top: -50px;
+    right: -30px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* ================= GREETING ENHANCEMENT ================= */
+.welcome-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+.welcome-text {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    background: linear-gradient(to right, #ffffff, #c7d2fe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.9;
+}
+
+.user-emoji {
+    font-size: 14px;
+    animation: wave 2s infinite;
+    display: inline-block;
+}
+
+/* Animasi Melambai pada Emoji */
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(15deg); }
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.app-header h1 {
+    font-size: 28px;
+    letter-spacing: -1px;
+    margin-top: 5px;
+    background: white;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: white; /* Memberikan kesan teks lebih 'bold' & clean */
+}
+
+.app-header h1 {
+    font-size: 24px; /* Ukuran sedikit diperkecil agar proporsional */
+    font-weight: 800;
+    margin: 0;
+}
+
+/* Badge Melayang (Glassmorphism) */
+.header-badge-container {
+    margin-top: 8px; /* Merapatkan jarak badge ke judul */
+}
+
+.header-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* ================= KONTROL POJOK KANAN ATAS ================= */
+.top-controls {
+    position: absolute;
+    top: 15px; /* Naikkan sedikit agar aman di area datar */
+    right: 20px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000; /* Paling atas */
+}
+
+/* Pastikan status dot (lampu) tetap rapi di samping/bawah */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 2px;
+}
+
+/* Badge Versi */
+.version-info {
+    position: static !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px 10px !important;
+    border-radius: 20px;
+    font-size: 10px !important;
+    font-weight: 800;
+    color: white !important;
+    margin: 0 !important;
+}
+
+/* Tombol Gembok */
+.admin-lock-btn {
+    position: static !important;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 14px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.admin-lock-btn:active {
+    transform: scale(0.9);
+    background: rgba(255, 255, 255, 0.25);
 }
 .app-header h1 { 
     margin: 0; 
@@ -54,19 +225,6 @@ body {
     font-size: 12px; 
     opacity: 0.9;
 }
-
-/* ===== STATUS BAR ===== */
-.status-bar {
-    padding: 8px 16px;
-    font-size: 11px;
-    font-weight: 600;
-    text-align: center;
-    flex-shrink: 0;
-    transition: all 0.3s;
-}
-.status-online { background: #c6f6d5; color: #22543d; }
-.status-offline { background: #fed7d7; color: #742a2a; }
-.status-syncing { background: #feebc8; color: #7c2d12; }
 
 /* ===== MAIN CONTENT ===== */
 .main-content {
@@ -490,4 +648,166 @@ body {
     text-align: left; 
     font-weight: 700;
     box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+/* ================= PREMIUM DASHBOARD ENHANCEMENTS ================= */
+
+.premium-dashboard {
+    /* Margin negatif ditarik lebih tinggi agar menempel ke trapesium */
+    margin-top: -30px; 
+    position: relative;
+    z-index: 200; /* Di atas header agar tidak tertutup slant */
+    padding: 0 24px;
+}
+
+/* --- Kartu Saldo Utama (Gradient Card) --- */
+.info-item.balance.gradient-card {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border: none;
+    position: relative;
+    overflow: hidden;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    grid-column: span 2; /* Membentang penuh */
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
+}
+
+/* Dekorasi melingkar di belakang kartu saldo */
+.gradient-card .card-decoration {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.gradient-card .card-decoration::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -80px;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+
+.gradient-card .label-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.gradient-card .icon-label {
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px;
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
+}
+
+.gradient-card .label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gradient-card .value {
+    color: white;
+    font-size: 36px;
+    font-weight: 800;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 12px;
+    letter-spacing: -1px;
+}
+
+/* Target Info (Di dalam Kartu Saldo) */
+.gradient-card .trend {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.gradient-card .trend span {
+    color: white;
+    font-weight: 700;
+}
+
+/* --- Kartu Sub (Pemasukan & Pengeluaran) --- */
+.info-item.sub-card {
+    padding: 20px;
+    border-radius: 20px;
+    background: var(--white);
+    border: 1px solid #e2e8f0;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+}
+
+.info-item.sub-card:active {
+    transform: scale(0.96);
+}
+
+.sub-card .label-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.sub-card .icon-label {
+    font-size: 16px;
+}
+
+.sub-card .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray);
+    text-transform: uppercase;
+}
+
+.info-item.income .value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--success);
+}
+
+.info-item.expense .value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--danger);
+}
+/* ================= STATUS DOT (INDIKATOR CLOUD) ================= */
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 12px; /* Disesuaikan agar titik pas berada di bawah tengah gembok */
+    transition: all 0.3s ease;
+}
+
+/* Warna lampu indikator LED */
+.status-online { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
+.status-offline { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+.status-syncing { 
+    background-color: #f59e0b; 
+    box-shadow: 0 0 10px #f59e0b; 
+    animation: statusPulse 1s infinite; 
+}
+
+/* Animasi berkedip saat memuat data */
+@keyframes statusPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
 }
