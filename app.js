@@ -63,6 +63,20 @@ const app = {
                 .catch(console.error);
         }
     },
+    // Masukkan ini ke dalam init()
+    updateGreeting() {
+        const hour = new Date().getHours();
+        const greetingEl = document.getElementById('greeting-text');
+        if (!greetingEl) return;
+
+        let greeting = "Selamat Datang";
+        if (hour >= 5 && hour < 11) greeting = "Selamat Pagi";
+        else if (hour >= 11 && hour < 15) greeting = "Selamat Siang";
+        else if (hour >= 15 && hour < 18) greeting = "Selamat Sore";
+        else greeting = "Selamat Malam";
+
+        greetingEl.textContent = greeting;
+    },
 
     // ===== SUPABASE =====
     initSupabase() {
@@ -183,8 +197,9 @@ const app = {
     updateStatus(type, msg) {
         const bar = document.getElementById('status-bar');
         if (bar) {
-            bar.className = 'status-bar status-' + type;
-            bar.textContent = msg;
+            bar.className = 'status-dot status-' + type;
+            bar.title = msg; // Mengubah teks panjang menjadi tooltip (muncul jika ikon ditahan)
+            bar.textContent = ''; // Mengosongkan teks agar bentuknya tetap bulat sempurna
         }
     },
 
@@ -1009,21 +1024,32 @@ const app = {
     },
 
     async toggleIuran(wId, tahun, bulan) {
-        // --- TAMBAHKAN PENGECEKAN INI ---
         if (!this.isAdmin) {
             alert('Akses Ditolak: Hanya Admin yang dapat mengubah status pembayaran.');
             return;
         }
+
         const warga = this.warga.find(w => w.id === wId);
         const trxIndex = this.transaksi.findIndex(t => t.warga_id === wId && t.tahun_iuran == tahun && t.bulan_iuran == bulan && t.jenis === 'masuk' && (!t.kategori || t.kategori === 'iuran-rutin'));
 
         if (trxIndex >= 0) {
             if(confirm(`Batalkan pembayaran ${this.namaBulan[bulan]} ${tahun}?`)) {
                 const tId = this.transaksi[trxIndex].id;
+                
+                // 1. Hapus dari memori (Instan)
                 this.transaksi.splice(trxIndex, 1);
                 
+                // 2. Render layar secara instan
+                this.renderKartuIuran();
+                this.renderDashboard();
+                this.renderListTransaksi();
+                this.renderListWarga(); // <-- Tambahan agar daftar tunggakan di tab warga langsung berubah
+                
+                // 3. Simpan ke Cloud di latar belakang (tanpa 'await')
                 if (this.isConnected && this.supabase) {
-                    await this.supabase.from('transaksi').delete().eq('id', tId);
+                    this.supabase.from('transaksi').delete().eq('id', tId).then(({error}) => {
+                        if (error) console.error(error);
+                    });
                 } else {
                     this.saveLocal();
                 }
@@ -1045,19 +1071,26 @@ const app = {
                     tahun_iuran: tahun.toString(),
                     catatan: 'Dari sistem checklist'
                 };
+                
+                // 1. Tambah ke memori (Instan)
                 this.transaksi.unshift(data);
                 
+                // 2. Render layar secara instan
+                this.renderKartuIuran();
+                this.renderDashboard();
+                this.renderListTransaksi();
+                this.renderListWarga(); // <-- Tambahan agar daftar tunggakan di tab warga langsung berubah
+                
+                // 3. Simpan ke Cloud di latar belakang (tanpa 'await')
                 if (this.isConnected && this.supabase) {
-                    await this.supabase.from('transaksi').insert([data]);
+                    this.supabase.from('transaksi').insert([data]).then(({error}) => {
+                        if (error) console.error(error);
+                    });
                 } else {
                     this.saveLocal();
                 }
             }
         }
-        
-        this.renderKartuIuran();
-        this.renderDashboard();
-        this.renderListTransaksi();
     },
 
     // ===== FITUR REKAP TAHUNAN =====
