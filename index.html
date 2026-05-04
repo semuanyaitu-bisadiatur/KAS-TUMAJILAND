@@ -28,79 +28,102 @@
 
     <!-- HEADER -->
     <header class="app-header">
-        <h1>🏘️ Kas Perumahan</h1>
-        <p id="header-subtitle">Dashboard</p>
+        <div class="header-glow"></div>
+        
+        <div class="top-controls">
+            <div id="status-bar" class="status-dot status-offline"></div>
+            
+            <div class="version-info" id="version-display">v1.0.0</div>
+            
+            <button onclick="app.mintaAksesAdmin()" class="admin-lock-btn">🔐</button>
+        </div>
+        
+        <div class="header-content">
+            <div class="welcome-wrapper">
+                <span id="greeting-text" class="welcome-text">Selamat Datang</span>
+                <span class="user-emoji">✨</span>
+            </div>
+            <h1>🏘️ Kas Perumahan</h1>
+            <div class="header-badge-container">
+                <span class="header-badge">Lingkungan Nyaman, Kas Terpantau</span>
+            </div>
+        </div>
     </header>
 
-    <!-- VERSION DISPLAY -->
-    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <div class="version-info" id="version-display" style="margin: 0;">v1.0.0</div>
-        <button onclick="app.mintaAksesAdmin()" style="background:none; border:none; font-size:14px; cursor:pointer; padding: 0; filter: grayscale(1);">🔐</button>
-    </div>
-    
-    <!-- STATUS -->
-    <div class="status-bar status-offline" id="status-bar">⏳ Menghubungkan...</div>
-
-    <!-- MAIN CONTENT -->
     <main class="main-content" id="main-content">
 
         <!-- PAGE: DASHBOARD -->
         <div class="page active" id="page-home">
-            <div class="info-grid">
-                <div class="info-item income">
-                    <div class="label">Pemasukan</div>
-                    <div class="value" id="dash-masuk">Rp0</div>
+            <div class="info-grid premium-dashboard">
+                <div class="info-item balance gradient-card">
+                    <div class="card-content">
+                        <div class="label-wrapper">
+                            <span class="icon-label">💎</span>
+                            <div class="label">Total Saldo Kas</div>
+                        </div>
+                        <div class="value" id="dash-saldo">Rp0</div>
+                        <div class="trend positive">Target: <span id="dash-target">Rp0</span> / bln</div> 
+                    </div>
+                    <div class="card-decoration"></div>
                 </div>
-                <div class="info-item expense">
-                    <div class="label">Pengeluaran</div>
-                    <div class="value" id="dash-keluar">Rp0</div>
+                
+                <div class="info-item income sub-card">
+                     <div class="card-content">
+                        <div class="label-wrapper">
+                            <span class="icon-label">📈</span>
+                            <div class="label">Pemasukan</div>
+                        </div>
+                        <div class="value" id="dash-masuk">Rp0</div>
+                    </div>
                 </div>
-                <div class="info-item balance">
-                    <div class="label">Saldo</div>
-                    <div class="value" id="dash-saldo">Rp0</div>
-                </div>
-                <div class="info-item target">
-                    <div class="label">Target Bulanan</div>
-                    <div class="value" id="dash-target">Rp0</div>
+                
+                <div class="info-item expense sub-card">
+                     <div class="card-content">
+                        <div class="label-wrapper">
+                            <span class="icon-label">📉</span>
+                            <div class="label">Pengeluaran</div>
+                        </div>
+                        <div class="value" id="dash-keluar">Rp0</div>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-title" style="justify-content: space-between;">
                     <span>🗓️ Rekap Iuran Seluruh Warga</span>
-                        <button class="btn btn-sm btn-outline" onclick="app.exportRekapTahunanCSV()" style="width: auto; padding: 4px 12px;">
+                        <button class="btn btn-sm btn-outline" onclick="app.exportRekapTahunanCSV()" style="width: auto; padding: 4px 12px; font-size: 11px;">
                            📥 Export CSV
-                            </button>
-                        </div>
-                <div class="form-group">
+                        </button>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
                     <select id="rekap-tahun-select" class="form-select" onchange="app.renderRekapTahunan()"></select>
                 </div>
-                <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0;">
                     <table id="table-rekap" style="width: 100%; border-collapse: collapse; font-size: 10px; min-width: 600px;">
                         <thead id="thead-rekap"></thead>
                         <tbody id="tbody-rekap"></tbody>
                     </table>
                 </div>
-                <div style="margin-top: 10px; display: flex; gap: 10px; font-size: 10px;">
-                    <span>✅ Lunas</span>
-                    <span>❌ Belum</span>
+                <div style="margin-top: 12px; display: flex; gap: 12px; font-size: 11px; font-weight: bold;">
+                    <span style="color: var(--success);">✅ Lunas</span>
+                    <span style="color: var(--danger);">❌ Belum</span>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-title">👥 Ringkasan Warga</div>
-                <div class="stats-row">
-                    <div class="stat-box">
-                        <div class="stat-value" id="dash-warga-total">0</div>
-                        <div class="stat-label">Total</div>
+                <div class="stats-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+                    <div class="stat-box" style="background: #f8fafc; padding: 16px; border-radius: 16px; text-align: center; border: 1px solid #e2e8f0;">
+                        <div class="stat-value" id="dash-warga-total" style="font-size: 24px; font-weight: 800; color: var(--text-main);">0</div>
+                        <div class="stat-label" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase;">Total</div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-value" style="color: var(--success);" id="dash-warga-aktif">0</div>
-                        <div class="stat-label">Aktif</div>
+                    <div class="stat-box" style="background: #ecfdf5; padding: 16px; border-radius: 16px; text-align: center; border: 1px solid #d1fae5;">
+                        <div class="stat-value" id="dash-warga-aktif" style="font-size: 24px; font-weight: 800; color: var(--success);">0</div>
+                        <div class="stat-label" style="font-size: 11px; color: var(--success); margin-top: 4px; text-transform: uppercase;">Aktif</div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-value" style="color: var(--danger);" id="dash-warga-tunggak">0</div>
-                        <div class="stat-label">Tunggak</div>
+                    <div class="stat-box" style="background: #fef2f2; padding: 16px; border-radius: 16px; text-align: center; border: 1px solid #fee2e2;">
+                        <div class="stat-value" id="dash-warga-tunggak" style="font-size: 24px; font-weight: 800; color: var(--danger);">0</div>
+                        <div class="stat-label" style="font-size: 11px; color: var(--danger); margin-top: 4px; text-transform: uppercase;">Tunggak</div>
                     </div>
                 </div>
             </div>
